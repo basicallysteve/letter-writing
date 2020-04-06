@@ -21,6 +21,10 @@ const routes = [
     component: Login
   },
   {
+    path: "/logout",
+    redirect: "/login"
+  },
+  {
     path: '/signup',
     name: 'Sign Up',
     component: () => import("@/views/SignUp")
@@ -37,19 +41,18 @@ const routes = [
     path: '/territories',
     name: 'Territory',
     meta: {
-      requiresAuth: false
+      requiresAuth: true
     },
     component: () => import(/* webpackChunkName: "about" */ '@/views/Territories.vue'),
-    children: [
-      {
-        path: ":id",
-        name: "StreetSignout",
-        component: () => '@/views/StreetSignOut'
-      }
-    ]
-    
   },
-  
+  {
+    path: "/admin",
+    name: "Admin",
+    meta: {
+      requiresAuth: true
+    },
+    component: ()=> import("@/views/Admin.vue")
+  }
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.

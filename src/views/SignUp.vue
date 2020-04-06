@@ -1,6 +1,6 @@
 <template>
     <form @submit.prevent="signUpUser">
-        <div>
+        <div style="width: 75%; display: flex; flex-flow: column; margin: auto;">
             <b-field label="Name">
                 <b-input v-model="signUp.name" type="text" placeholder="John Doe"/>
             </b-field>
@@ -30,7 +30,7 @@ export default {
     methods: {
         signUpUser(){
             fb.auth.createUserWithEmailAndPassword(this.signUp.email, this.signUp.password).then(user => {
-                this.addUser({name: this.signUp.name, email: this.signUp.email, is_super_admin: false, is_admin: false});
+                this.addUser({name: this.signUp.name, email: this.signUp.email, is_super_admin: false, is_admin: false, is_publisher: false});
                 this.$emit('userChange', user)
             }).catch(err => {
                 console.log(err)

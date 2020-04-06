@@ -11,10 +11,39 @@ export default {
 
         fetchUser(email){
             let db = firebase.firestore();
-            return db.collection("/users").where(`email`, "==", email).get();
+            return db.collection("/users").where("email", "==", email).get();
         },
+        async fetchUsers(){
+            let users = [];
+            let db = firebase.firestore();
 
-
+            let usersSnapshot = await db.collection("/users").get();
+            usersSnapshot.forEach(doc=>{
+                let user = doc.data();
+                user.user_id = doc.id
+                users.push(user);
+            })
+            return users;
+        },
+        updateUser(user){
+            let db = firebase.firestore();
+            return db.collection("/users").doc(user.user_id).update(user)
+        },
+        fetchUserById(id){
+            let db = firebase.firestore();
+            return db.collection("/users").doc(id).get()
+        },
+        deleteUser(id){
+            let db = firebase.firestore();
+            return db.collection("/users").doc(id).delete();
+        },
+        onUsersUpdate(cb){
+            let db = firebase.firestore();
+            return db.collection("/users").onSnapshot(cb);
+        },  
+        signout(){
+            return firebase.auth().signOut()
+        },
         addTerritory(territory){
             let db = firebase.firestore();
             let newTerritoryRef = db.collection("/territories").doc();
@@ -23,7 +52,7 @@ export default {
         async fetchTerritories(){
             let db = firebase.firestore();
             let territories = []
-            let territoriesSnapshot = await db.collection("/territories").get();
+            let territoriesSnapshot = await db.collection("/territories").orderBy("name", "asc").get();
             territoriesSnapshot.forEach(doc=>{
                 let territory = doc.data();
                 territory.territory_id = doc.id;
@@ -38,12 +67,12 @@ export default {
 
         updateStreet(territory, oldStreet, street){
             let db = firebase.firestore();
+            let streets = territory.streets.filter(territoryStreet=>{
+                return street.name != territoryStreet.name
+            })
+            streets.push(street);
             return db.collection("/territories").doc(territory.territory_id).update({
-                streets: firebase.firestore.FieldValue.arrayRemove(oldStreet)
-            }).then(()=>{
-                db.collection("/territories").doc(territory.territory_id).update({
-                    streets: firebase.firestore.FieldValue.arrayUnion(street)
-                })
+                streets,
             })
         },
         deleteTerritory(territory_id){
@@ -52,15 +81,43 @@ export default {
         },
 
         downloadStreet(territory, street){
-            firebase.storage().ref(`territories/${territory.name}/${street.name}.xlsx`).getDownloadURL().then(url=>{
-                var xhr = new XMLHttpRequest();
-                xhr.responseType = 'blob';
-                xhr.onload = function(event) {
-                    var blob = xhr.response;
-                };
-                xhr.open('GET', url);
-                xhr.send();
-            });
+            let territories = firebase.storage().ref(`territories`)
+
+            let territoryname = territory.name.split(" ");
+            territoryname[1] = parseInt(territoryname[1]);
+            territoryname = territoryname.join(" ");
+            territories.child(`/${territoryname}/${street.name}.xlsx`).getDownloadURL().then(url=>{
+                let a = document.createElement("a");
+                a.setAttribute("download", `${street.name}.xlsx`);
+                a.setAttribute("href", url);
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }).catch(err=>{
+               console.log(err);
+            })
+        },
+        onTerritoryUpdate(cb){
+            let db = firebase.firestore();
+            return db.collection("/territories").onSnapshot(cb);
+        },
+
+        async fetchStreets(user_id){
+            let db = firebase.firestore();
+            let streets = []
+            let territoriesSnapshot = await db.collection("/territories").get();
+            territoriesSnapshot.forEach(doc=>{
+                let territory = doc.data();
+                territory.territory_id = doc.id;
+                territory.streets.forEach(street=>{
+                    if(street.checked_out_by == user_id){
+                        street.territory = territory;
+                        streets.push(street);
+                    }
+                })
+            })
+            return streets;
         }
     }
 }

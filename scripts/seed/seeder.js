@@ -35,15 +35,19 @@ async function parseTerritory(fileDir, territory){
                 name: null,
                 houses: 0,
                 checked_out: false,
+                checked_out_by: false,
+                release_from_hold: null,
+                released_at: null,
                 last_checkout: null,
                 returned_at: null
             };
             let workbook = XLSX.readFile(path.join(fileDir, dirent.name));
 
             let {sheet, range} = findSheet(workbook, "Sheet1");
-
+            territory.name = sheet.A1.v
+            street.name = sheet.A3.v
             let colMap = {
-                num: 'House #',
+                num: 'Apt#',
                 name: 'Name',
                 phone: "Phone",
                 notes: "Notes"
@@ -56,13 +60,12 @@ async function parseTerritory(fileDir, territory){
                     street.houses += 1
                 }
             }
-            street.name = workbook.Sheets.Sheet1.B1.v;
             territory.streets.push(street);
             let storage = admin.storage().bucket();
             let upload = storage.file(`territories/${territory.name}/${street.name}.xlsx`);
             let stream = upload.createWriteStream();
 
-            stream.end(fs.readFileSync(path.join(__dirname, territory.name, `${dirent.name}`)));
+            stream.end(fs.readFileSync(path.join(fileDir, `${dirent.name}`)));
             }catch(err){
                 console.log(err);
             }
