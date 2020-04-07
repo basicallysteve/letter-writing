@@ -6,7 +6,7 @@
     <div>
       You have {{streets.length}} streets checked out
 
-      <b-table :data="streets">
+      <b-table :data="streets" v-if="streets.length > 0">
         <template v-slot="props">
           <b-table-column field="street_name" label="Street Name">{{props.row.name}}</b-table-column>
           <b-table-column field="checkout_date" label="Checked Out">{{props.row.last_checkout.toDate()}}</b-table-column>
@@ -35,18 +35,19 @@ export default {
     },
     returnStreet(street){
       street.returned_at = new Date();
-      street.checked_out_by = null;
+      street.checked_out = false;
       let territory =  street.territory;
       delete street.territory;
-      // console.log(territory);
-      this.updateStreet(territory, null, street)
+      this.updateStreet(territory, null, street).then(()=>{
+
+})
     }
   },
   mixins: [firebaseMixin],
 
   mounted(){
     this.onTerritoryUpdate(()=>{
-      // this.loadStreetsForUser();
+      this.loadStreetsForUser();
     })
   },
   watch: {

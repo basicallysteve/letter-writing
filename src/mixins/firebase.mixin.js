@@ -114,7 +114,7 @@ export default {
                 let territory = doc.data();
                 territory.territory_id = doc.id;
                 territory.streets.forEach(street=>{
-                    if(street.checked_out_by == user_id){
+                    if(street.checked_out_by == user_id && street.checked_out){
                         street.territory = territory;
                         streets.push(street);
                     }

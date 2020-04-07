@@ -68,6 +68,7 @@ export default {
             street.checked_out_name = null;
             street.checked_out_by = null;
             street.last_checkout = null;
+            street.checked_out = false;
             street.returned_at = null;
             this.updateStreet(territory, null, street)
         },
