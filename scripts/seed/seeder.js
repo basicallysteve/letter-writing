@@ -2,6 +2,7 @@ let fs = require("fs");
 let path = require("path");
 
 let XLSX = require("xlsx");
+let Prince = require("prince");
 let _ = require('lodash');
 const dc = XLSX.utils.decode_cell,
       ec = (r, c) => { return XLSX.utils.encode_cell({r: r, c: c}); };
@@ -10,7 +11,7 @@ const dc = XLSX.utils.decode_cell,
 let firebase = require("firebase");
 let admin = require("firebase-admin");
 
-var serviceAccount = require("./serviceAccountKey.json");
+var serviceAccount = require("../serviceAccountKey.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -47,7 +48,7 @@ async function parseTerritory(fileDir, territory){
             territory.name = sheet.A1.v
             street.name = sheet.A3.v
             let colMap = {
-                num: 'Apt#',
+                num: 'Address #',
                 name: 'Name',
                 phone: "Phone",
                 notes: "Notes"
@@ -61,11 +62,13 @@ async function parseTerritory(fileDir, territory){
                 }
             }
             territory.streets.push(street);
+            let streetPDF = path.join(__dirname, "out", `${street.name}.xlsx`);
+
+            XLSX.writeFile(workbook, streetPDF)
             let storage = admin.storage().bucket();
             let upload = storage.file(`territories/${territory.name}/${street.name}.xlsx`);
             let stream = upload.createWriteStream();
-
-            stream.end(fs.readFileSync(path.join(fileDir, `${dirent.name}`)));
+            stream.end(fs.readFileSync(path.join(__dirname, "out", `${street.name}.xlsx`)));
             }catch(err){
                 console.log(err);
             }
@@ -73,11 +76,11 @@ async function parseTerritory(fileDir, territory){
         
     }
 
-    let db = admin.firestore();
-    let newTerritoryRef = db.collection("/territories").doc();
-    newTerritoryRef.set(territory).then(response=>{
-        console.log(response)
-    });
+    // let db = admin.firestore();
+    // let newTerritoryRef = db.collection("/territories").doc();
+    // newTerritoryRef.set(territory).then(response=>{
+    //     console.log(response)
+    // });
 
 }
 
@@ -96,7 +99,7 @@ async function importSeeder(){
     }
 }
 
-importSeeder()
+// importSeeder()
 
 
 
@@ -195,4 +198,11 @@ function readTable(sheet, range, columns, firstRow, stop) {
     }
 
     return data;
+}
+
+module.exports = {
+    findTable,
+    findSheet,
+    readTable,
+    admin
 }

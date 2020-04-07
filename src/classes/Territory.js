@@ -1,0 +1,5 @@
+class Territory {
+    constructor(props){
+        
+    }
+}
