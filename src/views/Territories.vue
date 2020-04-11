@@ -3,14 +3,16 @@
         <div v-if="false" @click="addNewTerritory" style="display: flex; flex-flow: row; justify-content: flex-end;  margin-right: 1em; margin-bottom: 1em;">
             <b-button size="is-small" icon-left="plus">Add New Territory</b-button>
         </div>
-        <territory v-for="territory in territories" 
-        :key="territory.territory_id" :territory="territory" 
+        <div v-for="territory in territories" :key="territory.territory_id">
+        <territory 
+         :territory="territory" 
         @newTerritory="addTerritory" @deleteTerritory="removeTerritory" 
         :canCD="$attrs.user? $attrs.user.is_admin : false" :userId="$attrs.user ? $attrs.user.user_id : null" 
         @checkoutStreet="checkoutStreet" 
         @returnStreet="returnStreet" 
         @releaseStreet="release"
-        :canCheckout="canCheckoutTerritory"/>
+        :canCheckout="canCheckoutTerritory" v-if="!territory.is_letter_writing"/>
+        </div>
         
     </div>
 </template>
@@ -66,6 +68,7 @@ export default {
             street.checked_out_name = null;
             street.checked_out_by = null;
             street.last_checkout = null;
+            street.checked_out = false;
             street.returned_at = null;
             this.updateStreet(territory, null, street)
         },

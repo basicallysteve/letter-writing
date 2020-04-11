@@ -1,15 +1,35 @@
 <template>
   <div id="app">
+    <b-navbar id="nav">
+      <template slot="start">
+        <b-navbar-item>
+          <router-link to="/">Home</router-link>
+        </b-navbar-item>
+        <b-navbar-item>
+          <router-link to="territories">Territories</router-link>
+        </b-navbar-item>
+        <b-navbar-item>
+          <router-link to="admin" v-if="profile ? profile.is_admin : false">Admin</router-link>
+        </b-navbar-item>
+      </template>
+      <template #end>
+         <b-navbar-item v-if="currentUser == null">
+           <router-link to="login">Login</router-link></b-navbar-item>
+        <b-navbar-item v-else>
+          <a class="router-link" @click="signOut">Logout</a>
+        </b-navbar-item>
+        <b-navbar-item>
+          <router-link to="signup">Sign Up</router-link>
+        </b-navbar-item>
+      </template>
+    </b-navbar>
     <div id="nav">
       <div>
-      <router-link to="/">Home</router-link> |
-      <router-link to="territories">Territories</router-link> |
-      <router-link to="admin" v-if="profile ? profile.is_admin : false">Admin</router-link>
+  
+      
       </div>
       <div style="display: flex; flex-flow: row">
-        <div v-if="currentUser == null"><router-link to="login">Login</router-link> |</div>
-        <div v-else><a class="router-link" @click="signOut">Logout</a> |</div>
-        <div><router-link to="signup">Sign Up</router-link></div>
+       
         
       </div>
     </div>

@@ -31,6 +31,7 @@
     "firebase-admin": "^8.10.0",
     "lodash": "^4.17.15",
     "node-sass": "^4.12.0",
+    "prince": "^1.8.0",
     "sass-loader": "^8.0.2",
     "vue-template-compiler": "^2.6.11"
   },

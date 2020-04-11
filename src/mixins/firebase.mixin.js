@@ -34,8 +34,11 @@ export default {
             return db.collection("/users").doc(id).get()
         },
         deleteUser(id){
-            let db = firebase.firestore();
-            return db.collection("/users").doc(id).delete();
+            // let functions = firebase.functions();
+            // let callable = functions.httpsCallable("deleteUser");
+            // callable(id);
+            // let db = firebase.firestore();
+            // return db.collection("/users").doc(id).delete();
         },
         onUsersUpdate(cb){
             let db = firebase.firestore();
@@ -84,11 +87,14 @@ export default {
             let territories = firebase.storage().ref(`territories`)
 
             let territoryname = territory.name.split(" ");
-            territoryname[1] = parseInt(territoryname[1]);
+            // territoryname[1] = parseInt(territoryname[1]);
             territoryname = territoryname.join(" ");
-            territories.child(`/${territoryname}/${street.name}.xlsx`).getDownloadURL().then(url=>{
+
+            let bucket = street.pdf_format ? `/${territoryname}/${street.name}.pdf` : `/${territoryname}/${street.name}.xlsx`
+            territories.child(bucket).getDownloadURL().then(url=>{
                 let a = document.createElement("a");
-                a.setAttribute("download", `${street.name}.xlsx`);
+                let downloadFile = street.pdf_format ? `${street.name}.pdf` : `${street.name}.xlsx`
+                a.setAttribute("download", downloadFile);
                 a.setAttribute("href", url);
                 a.style.display = 'none';
                 document.body.appendChild(a);
@@ -111,7 +117,7 @@ export default {
                 let territory = doc.data();
                 territory.territory_id = doc.id;
                 territory.streets.forEach(street=>{
-                    if(street.checked_out_by == user_id){
+                    if(street.checked_out_by == user_id && street.checked_out){
                         street.territory = territory;
                         streets.push(street);
                     }

@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "letter-writing-app",
+  "private_key_id": "ae5b191070f1a593b4d7c5fb7e4d2db0262d6a58",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCZOVpO9BlAAZjS\nnACzfpHRv/NWJyIrEAqgOEbjA4f2ECU0B+D8zyKo5RcovHt9aDTPRTeYb1GZs0QF\npHv3g6AIL8ibJmZSWCqhPJLHdOCnJXHr7V3ZpLcsPnSWNBx2/SAlcNgg8Yo7ULad\nB2whAwtGSEsKw2dhsO/mWWWjehjgw7fX+EHoIop5KR2oZemHqYkWgdWsJ7u9EOYY\nkBTiK/qv4IF66Vkc73I+obFzFooK5ysn3n6YP4TYCMcHtrYQAWV3u3dUobBnVYFq\nDKVE1LFdxb03r2RCthnLqz9Vsmxoh2Sz1qFt4uXQxPO3ahzIezx/eRlmjY27tQZc\nETzEV79JAgMBAAECggEAAjRBwRCAW3waZW8ykGJx+Q00lCjwdCOhL4BXvrTCjC7b\nxiWV3jUhl8Hh5Sde9GUfG1swy0vQpfAe+qDM2rjlQLDlRxwUjTsw88xSBTYAdE8U\n1jK+Lp8Qtn14gl+iCDEoePloVoL6/NLyqYwdiVUIoLxx/eflMRHRRaREEsezG2qX\noqPcyFQeW/F2VySXYujcKoaEtPST+gfQ8mReCeUySOikvT5pDKIhcYNRl7IlbVX5\nvguFO5luEPF92DmR+bNjzXIqKjWBRu5hpgNkUynVelVEouM0CjAuXZXXzSoirxAH\nLhKfzb5I1KEKiwNeCR7weYOxKXqAqU36wULssDyUwQKBgQDOsXgyfc656Fg+808I\nZ1qxl2L3r/3M24fuVnvZXnk6UMJKdneXvaysoFouF9UHzsFaMLOaHJ14KlAva59a\nSt0IykW/859bpnHupLag5hYByULljC26MgBcb6SMLN8KXO+s+8EdYdYgUuDdZRbz\n/Ptk+5gsB3dlv7Ihyyi5dq99qQKBgQC9xpPEsDWfQ2fohbkexFKfdBKnAQrKqwKx\nx0nzE3xksjsGx9lWpIYpk3tq6dIS1oxNvD0UG1NkWr+Bn6T7tHqCVM8XvoK1Ti+E\nRZAJPi8iq5f2pt2rlpcKVptEKbmx9jf/7EYn9gfdEmTA1nTRXD19pV6JiC5ai1lu\nlO7Fpw74oQKBgHINZZje6OqWtdMOqSam+VmTgo3QNAkNfkVavX5lbhlqpLs4Aafe\nhuC+nuReTDPBt9mPlBtO/Olo19RC26yUMMF/89sGkIGfJ7EafJfuPmh/6QUHQ9hB\nbQeUp0SeIfjy7WITjS0sZl5xvRkNhgveJc5EMmThPdYMYDvbgb5NKmr5AoGASCky\nFyBJw32GDUyLz78nC6q/TPGAgP/1zlPRMrS+ICwFddaYNfHpcfW6gDTYxIEAaK6j\nKvoZA5feKhPiUDOYQeatuIGgggBw4QLyehFDKxPEfO2GbLCeTjgQYiLbkWfmc1IM\nezV6V/2eghUJ5nIEj7pJ8FHwDk3ee8X15QJZFwECgYEAwtlYHUTw0E8f5NAEB1/8\nhjhwwllsaMoHeEaraGrIM6zWiXVvgpyjT9TCQMCRZkvgpyU3FKiYje7Di8JUW+ER\nVi2u5zKtNnTaFcxHcx+DPX3KlfiHnLkMOh13gYrhyV5W/8BWVjVydgTDcUZZR7dJ\n1SmTw81GCVdoEqvMgImLvwc=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-10zpg@letter-writing-app.iam.gserviceaccount.com",
+  "client_id": "109255064807824045758",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-10zpg%40letter-writing-app.iam.gserviceaccount.com"
+}

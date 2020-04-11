@@ -20,7 +20,7 @@
             <div class="content">
                 <div v-if="territory.territory_id">
                     <div v-for="(street, index) in formattedTerritory.streets" :key="index" class="street">
-                        <div style="margin-right: 1em;">
+                        <div style="margin-right: 1em;" class="info">
                             {{street.name}} | {{street.houses}} houses 
                             {{street.last_checkout != null ? `| Checked out at ${formatDate(street.last_checkout.toDate ? street.last_checkout.toDate() : null)} by ${street.checked_out_name}` : ""}}
                             {{street.returned_at != null ? `| Returned at ${formatDate(street.returned_at.toDate ? street.returned_at.toDate() : null)}` : ""}}</div>
@@ -30,6 +30,7 @@
                             <b-button v-else disabled>Checked Out</b-button>
                             <b-button @click="releaseFromHold(street)" v-if="($attrs.canCD ? $attrs.canCD : false ) && street.returned_at != null && !street.release_from_hold">Release from Hold</b-button>
                         </div>
+                        <hr />
                     </div>
                     <b-button type="is-danger" icon-left="delete" @click="deleteTerritory" v-if="$attrs.canCD"/>
                 </div>
@@ -130,7 +131,15 @@ export default {
         align-items: center;
         justify-content: space-between;
         margin: 1em;
+        .info {
+            width: 70%;
+            text-align:left;
+        }
         .actions {
+            width: 50%;
+            display: flex;
+            flex-flow: row;
+            justify-content: flex-end;
             button {
                 margin-right: .5em;
             }
