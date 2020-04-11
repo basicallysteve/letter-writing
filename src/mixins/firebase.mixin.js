@@ -34,8 +34,11 @@ export default {
             return db.collection("/users").doc(id).get()
         },
         deleteUser(id){
-            let db = firebase.firestore();
-            return db.collection("/users").doc(id).delete();
+            // let functions = firebase.functions();
+            // let callable = functions.httpsCallable("deleteUser");
+            // callable(id);
+            // let db = firebase.firestore();
+            // return db.collection("/users").doc(id).delete();
         },
         onUsersUpdate(cb){
             let db = firebase.firestore();
