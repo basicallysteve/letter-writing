@@ -7,7 +7,7 @@
             class="card-header"
             role="button">
             <div class="card-header-title" style="display: flex; flex-flow: row; justify-content: space-between;" >
-                {{formattedTerritory.territory_id ? formattedTerritory.name : "New Territory"}}
+                {{formattedTerritory.name ? formattedTerritory.name : "New Territory"}}
             </div>
             
             <a class="card-header-icon">
@@ -18,31 +18,38 @@
         </div>
         <div class="card-content">
             <div class="content">
-                <div v-if="territory.territory_id">
+                <div >
                     <div v-for="(street, index) in formattedTerritory.streets" :key="index" class="street">
-                        <div style="margin-right: 1em;" class="info">
+                        <div style="margin-right: 1em;" class="info" v-if="territory.territory_id">
                             {{street.name}} | {{street.houses}} houses 
                             {{street.last_checkout != null ? `| Checked out at ${formatDate(street.last_checkout.toDate ? street.last_checkout.toDate() : null)} by ${street.checked_out_name}` : ""}}
-                            {{street.returned_at != null ? `| Returned at ${formatDate(street.returned_at.toDate ? street.returned_at.toDate() : null)}` : ""}}</div>
-                        <div class="actions">
+                            {{street.returned_at != null ? `| Returned at ${formatDate(street.returned_at.toDate ? street.returned_at.toDate() : null)}` : ""}}
+                        </div>
+                        <div class="info inputs" v-else>
+                            <b-input type="text" v-model="street.name" placeholder="Main Street" style="margin-right: 1em;"/>
+                            <b-input type="number" v-model="street.houses" placeholder="10 houses" style="margin-right: 1em;"/>
+                        </div>
+                        <div class="actions" v-if="territory.territory_id">
                             <b-button :disabled="!$attrs.canCheckout || street.release_from_hold == false" v-if="!street.checked_out" @click="toggleCheckout(street.name, index)">Check Out</b-button>
                             <b-button @click="toggleCheckout(street.name, index)" v-else-if="street.checked_out_by == $attrs.userId">Return</b-button>
                             <b-button v-else disabled>Checked Out</b-button>
                             <b-button @click="releaseFromHold(street)" v-if="($attrs.canCD ? $attrs.canCD : false ) && street.returned_at != null && !street.release_from_hold">Release from Hold</b-button>
                         </div>
+                        <div class="actions" v-else>
+                            <b-upload v-model="street.file" accepts=".pdf" v-if="!street.file_uploaded" @input="uploadStreet($event, street)">
+                                <a class="button is-primary">
+                                    <b-icon icon="upload"></b-icon>
+                                    <span>Upload Street</span>
+                                </a>
+                            </b-upload>
+                            <b-button type="is-danger" icon-left="delete" @click="deleteStreet(index)">Delete Street</b-button>
+                        </div>
                         <hr />
                     </div>
-                    <b-button type="is-danger" icon-left="delete" @click="deleteTerritory" v-if="$attrs.canCD"/>
-                </div>
-                <div v-else>
-                    <form @submit.prevent="newTerritory(territory)">
-                        <div>
-                            <b-field label="Territory">
-                                <b-input v-model="territory.name" />  
-                            </b-field>
-                            <b-button native-type="submit">Save</b-button>
-                        </div>
-                    </form>
+                    <b-button type="is-primary" icon-left="plus"  @click="addStreet" v-if="$attrs.canCD && territory.territory_id == null" style="margin-right: 1em;">Add Street</b-button>
+                    <b-button type="is-success" icon-left="floppy" @click="saveTerritory" v-if="$attrs.canCD && territory.territory_id == null" style="margin-right: 1em;">Save Territory</b-button>
+                    <b-button type="is-danger" icon-left="delete" @click="deleteTerritory"  v-if="$attrs.canCD && territory.territory_id == null" disabled style="margin-right: 1em;">Delete Territory</b-button>
+                    
                 </div>
             </div>
         </div>
@@ -74,8 +81,34 @@ export default {
         }
     },
     methods: {
-        newTerritory(){
-            this.$emit("newTerritory", this.territory)
+        addStreet(){
+            this.territory.streets.push({
+                name: null,
+                houses: 0,
+                checked_out: false,
+                checked_out_by: false,
+                release_from_hold: null,
+                released_at: null,
+                last_checkout: null,
+                returned_at: null,
+                pdf_format: true
+            })
+        },
+        saveTerritory(){
+            for(let street of this.territory.streets){
+                delete street.html;
+                delete street.file;
+            }
+            this.$emit("saveTerritory", this.territory)
+        },
+        deleteStreet(index){
+            let streets = [];
+            for(let i = 0; i < this.territory.streets.length; i++){
+                if(i != index){
+                    streets.push(this.territory.streets[i]);
+                }
+            }
+            this.territory.streets = streets;
         },
         deleteTerritory(){
             this.$emit("deleteTerritory", this.territory.territory_id);
@@ -97,6 +130,11 @@ export default {
                     }
                 }
             }
+        },
+        uploadStreet(event, street){
+            this.saveFile(event, `territories/${this.territory.name}/${street.name}.pdf`).then(()=>{
+                street.file_uploaded = true;
+            });
         },
         formatDate(date){
             return moment(date).format("MM/DD/Y")
@@ -134,6 +172,11 @@ export default {
         .info {
             width: 70%;
             text-align:left;
+            &.inputs {
+                display: flex;
+                flex-flow: row nowrap;
+            
+            }
         }
         .actions {
             width: 50%;

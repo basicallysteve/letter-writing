@@ -33,7 +33,7 @@ const routes = [
     path: '/about',
     name: 'About',
     meta: {
-      requiresAuth: true
+      requiresAuth: false
     },
     component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
   },

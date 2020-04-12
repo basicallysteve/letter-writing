@@ -47,7 +47,7 @@ export default {
         signout(){
             return firebase.auth().signOut()
         },
-        addTerritory(territory){
+        createTerritory(territory){
             let db = firebase.firestore();
             let newTerritoryRef = db.collection("/territories").doc();
             newTerritoryRef.set(territory);
@@ -124,6 +124,11 @@ export default {
                 })
             })
             return streets;
+        },
+        saveFile(file, path){
+            let storageBucket = firebase.storage().ref()
+            let upload = storageBucket.child(path);
+            return upload.put(file);
         }
-    }
+    },
 }
