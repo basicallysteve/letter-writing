@@ -28,6 +28,7 @@
                         <div class="info inputs" v-else>
                             <b-input type="text" v-model="street.name" placeholder="Main Street" style="margin-right: 1em;"/>
                             <b-input type="number" v-model="street.houses" placeholder="10 houses" style="margin-right: 1em;"/>
+                            <div>{{street.file ? street.file.name : null}}</div>
                         </div>
                         <div class="actions" v-if="territory.territory_id">
                             <b-button :disabled="!$attrs.canCheckout || street.release_from_hold == false" v-if="!street.checked_out" @click="toggleCheckout(street.name, index)">Check Out</b-button>
@@ -36,8 +37,8 @@
                             <b-button @click="releaseFromHold(street)" v-if="($attrs.canCD ? $attrs.canCD : false ) && street.returned_at != null && !street.release_from_hold">Release from Hold</b-button>
                         </div>
                         <div class="actions" v-else>
-                            <b-upload v-model="street.file" accepts=".pdf" v-if="!street.file_uploaded" @input="uploadStreet($event, street)">
-                                <a class="button is-primary">
+                            <b-upload v-model="street.file" accepts=".pdf"  @input="uploadStreet($event, street)" :disabled="street.name == null">
+                                <a class="button is-primary" :disabled="street.name == null">
                                     <b-icon icon="upload"></b-icon>
                                     <span>Upload Street</span>
                                 </a>
@@ -47,7 +48,7 @@
                         <hr />
                     </div>
                     <b-button type="is-primary" icon-left="plus"  @click="addStreet" v-if="$attrs.canCD && territory.territory_id == null" style="margin-right: 1em;">Add Street</b-button>
-                    <b-button type="is-success" icon-left="floppy" @click="saveTerritory" v-if="$attrs.canCD && territory.territory_id == null" style="margin-right: 1em;">Save Territory</b-button>
+                    <b-button type="is-success" icon-left="floppy" @click="saveTerritory" v-if="$attrs.canCD && territory.territory_id == null" style="margin-right: 1em;" :disabled="territory.streets.length == 0">Save Territory</b-button>
                     <b-button type="is-danger" icon-left="delete" @click="deleteTerritory"  v-if="$attrs.canCD && territory.territory_id == null" disabled style="margin-right: 1em;">Delete Territory</b-button>
                     
                 </div>
@@ -108,6 +109,11 @@ export default {
                     streets.push(this.territory.streets[i]);
                 }
             }
+            this.deleteFile(`territories/${this.territory.name}/${this.territory.streets[index].name}.pdf`).then(response=>{
+            }).catch(err=>{
+
+            })
+
             this.territory.streets = streets;
         },
         deleteTerritory(){

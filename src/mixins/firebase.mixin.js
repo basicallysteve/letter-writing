@@ -129,6 +129,11 @@ export default {
             let storageBucket = firebase.storage().ref()
             let upload = storageBucket.child(path);
             return upload.put(file);
+        },
+        deleteFile(path){
+            let storageBucket = firebase.storage().ref();
+            let remove = storageBucket.child(path);
+            return remove.delete()
         }
     },
 }
