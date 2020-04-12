@@ -33,7 +33,7 @@ export default {
     },
     methods: {
         loadUsers(){
-            this.fetchUsers().then(users=>{
+            this.fetchUsers(this.$attrs.user.congregation_id).then(users=>{
                 this.users = users;
             })
         },

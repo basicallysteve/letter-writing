@@ -5,19 +5,24 @@ export default {
     methods: {
         addUser(user){
             let db = firebase.firestore();
-            let newUserRef = db.collection("/users").doc();
-            newUserRef.set(user);
+            let congregationSnapshot = db.collection("/congregation").where("name", "==", "North Coram").limit(1).get();
+            congregationSnapshot.forEach(doc=>{
+                let congregation = doc.data();
+                user.congregation_id = congregation.congregation_id;
+                let newUserRef = db.collection("/users").doc();
+                newUserRef.set(user);
+            })
         },
 
         fetchUser(email){
             let db = firebase.firestore();
             return db.collection("/users").where("email", "==", email).get();
         },
-        async fetchUsers(){
+        async fetchUsers(congregation_id){
             let users = [];
             let db = firebase.firestore();
 
-            let usersSnapshot = await db.collection("/users").get();
+            let usersSnapshot = await db.collection("/users").where("congregation_id", "==", congregation_id).get();
             usersSnapshot.forEach(doc=>{
                 let user = doc.data();
                 user.user_id = doc.id
@@ -52,10 +57,11 @@ export default {
             let newTerritoryRef = db.collection("/territories").doc();
             newTerritoryRef.set(territory);
         },
-        async fetchTerritories(){
+        async fetchTerritories(congregation_id){
             let db = firebase.firestore();
             let territories = []
-            let territoriesSnapshot = await db.collection("/territories").orderBy("name", "asc").get();
+            console.log(congregation_id);
+            let territoriesSnapshot = await db.collection("/territories").where("congregation_id", "==", congregation_id).orderBy("name", "asc").get();
             territoriesSnapshot.forEach(doc=>{
                 let territory = doc.data();
                 territory.territory_id = doc.id;
@@ -134,6 +140,15 @@ export default {
             let storageBucket = firebase.storage().ref();
             let remove = storageBucket.child(path);
             return remove.delete()
+        },
+
+
+        findCongregationByAddress(address){
+            let db = firebase.firestore();
+            let snapshot = db.collection("/congregations").where("address.street", "==", address.street).where("address.city", "==", address.city).where("address.state", "==", address.state).where("address.country", "==", address.country).where("address.zip_code", "==", address.zip_code).get();
+            snapshot.then(response=>{
+                console.log(response.docs);
+            })
         }
     },
 }

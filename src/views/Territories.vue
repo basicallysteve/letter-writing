@@ -69,9 +69,11 @@ export default {
             // this.deleteTerritory(territory_id)
         },
         loadTerritories(){
-            this.fetchTerritories().then(response=>{
-                this.territories = response;
-            })
+            if(this.$attrs.user){
+                this.fetchTerritories(this.$attrs.user.congregation_id).then(response=>{
+                    this.territories = response;
+                })
+            }
         },
         release(territory, street){
             street.released_at = null;

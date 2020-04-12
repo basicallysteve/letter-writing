@@ -38,6 +38,14 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
   },
   {
+    path: "/congregations",
+    name: "Congregations",
+    meta: {
+      requiresAuth: true,
+    },
+    component: ()=> import("@/views/CongregationSetUp.vue")
+  },
+  {
     path: '/territories',
     name: 'Territory',
     meta: {
