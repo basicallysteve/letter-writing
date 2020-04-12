@@ -37,7 +37,7 @@
                             <b-button @click="releaseFromHold(street)" v-if="($attrs.canCD ? $attrs.canCD : false ) && street.returned_at != null && !street.release_from_hold">Release from Hold</b-button>
                         </div>
                         <div class="actions" v-else>
-                            <b-upload v-model="street.file" accepts=".pdf"  @input="uploadStreet($event, street)" :disabled="street.name == null">
+                            <b-upload v-model="street.file" accept=".pdf"  @input="uploadStreet($event, street)" :disabled="street.name == null">
                                 <a class="button is-primary" :disabled="street.name == null">
                                     <b-icon icon="upload"></b-icon>
                                     <span>Upload Street</span>
