@@ -1,4 +1,9 @@
 let functions = require('firebase-functions');
+const nodemailer = require('nodemailer');
+const smtpTransport = require('nodemailer-smtp-transport');
+const cors = require("cors")({
+  origin: true
+});
 const admin = require("firebase-admin");
 
 let serviceAccount = require("../serviceAccountKey.json");
@@ -36,5 +41,39 @@ export const deleteUser = functions.https.onCall((userId: string)=>{
             err
         }
     }
-    
+})
+
+
+exports.emailMessage = functions.https.onRequest((req: any, res: any)=>{
+    const { email, message } = req.body;
+    return cors(req, res, ()=>{
+        let text = `<div>
+                    ${message}
+                    </div>`;
+        let sesAccessKey = '';
+        let sesSecretKey = '';
+        let transporter = nodemailer.createTransport(smtpTransport({
+            service: 'gmail',
+            auth: {
+                user: sesAccessKey,
+                pass: sesSecretKey
+            }
+        }));
+        const mailOptions = {
+            to: email,
+            from: "no-reply@servantlite.app",
+            text, 
+            html: text
+        };
+        transporter.sendMail(mailOptions, function(err:Error, info:any){
+            if(err){
+                console.log(err.message);
+            }
+            res.status(200).send({
+                message: "success"
+            });
+        }).catch(()=>{
+            res.status(500).send("error");
+        })
+    })
 })
