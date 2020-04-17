@@ -40,7 +40,7 @@
 import firebase from "firebase";
 const fb = require('./firebaseConfig.js')
 import firebaseMixin from "@/mixins/firebase.mixin.js";
-
+import messages from "@/mixins/message.mixin.js";
 export default {
   data(){
     return {
@@ -66,10 +66,13 @@ export default {
       })
     }
   },
-  mixins: [firebaseMixin],
+  mixins: [firebaseMixin, messages],
   mounted(){
     this.currentUser = firebase.auth().currentUser
     if(this.currentUser){
+      this.sendEmail(this.currentUser.email, "Test Message").then(response=>{
+        console.log(response);
+      })
       this.fetchUser(this.currentUser.email).then(querySnap=>{
           let user = null;
           return querySnap.forEach(doc=>{
