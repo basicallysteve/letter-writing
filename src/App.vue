@@ -70,9 +70,6 @@ export default {
   mounted(){
     this.currentUser = firebase.auth().currentUser
     if(this.currentUser){
-      this.sendEmail(this.currentUser.email, "Test Message").then(response=>{
-        console.log(response);
-      })
       this.fetchUser(this.currentUser.email).then(querySnap=>{
           let user = null;
           return querySnap.forEach(doc=>{
