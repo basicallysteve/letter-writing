@@ -2,7 +2,7 @@ import firebase from "firebase";
 import "firebase/firestore";
 
 const config = {
-    apiKey: "AIzaSyAFHTI9Sc-DjGHz2oo-w5Cvw30bXeSMgxI",
+    apiKey: "AIzaSyBKxjYmLeNTMvriNC10WwMQTYkKj7KJ0AQ",
     authDomain: "localhost",
     databaseUrl: "",
     projectId: "letter-writing-app",

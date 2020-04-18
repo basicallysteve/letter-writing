@@ -9,7 +9,9 @@
         <div v-for="territory in territories" :key="territory.territory_id">
         <territory 
          :territory="territory" 
-        @saveTerritory="saveTerritory" @deleteTerritory="removeTerritory" 
+        @saveTerritory="saveTerritory"
+        @deleteTerritory="removeTerritory" 
+        @updateTerritory="updateTerritory"
         :canCD="$attrs.user? $attrs.user.is_admin || $attrs.user.is_territory_servant : false" :userId="$attrs.user ? $attrs.user.user_id : null" 
         @checkoutStreet="checkoutStreet" 
         @returnStreet="returnStreet" 
