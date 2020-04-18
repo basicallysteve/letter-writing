@@ -1,6 +1,5 @@
 let functions = require('firebase-functions');
-const nodemailer = require('nodemailer');
-const smtpTransport = require('nodemailer-smtp-transport');
+const sgMail = require("@sendgrid/mail");
 
 const admin = require("firebase-admin");
 
@@ -43,38 +42,19 @@ export const deleteUser = functions.https.onCall((userId: string)=>{
 
 
 exports.emailMessage = functions.https.onCall((req:any)=>{
+    console.log(req);
     const { email, message } = req;
-        let text = `<div>
-                    ${message}
-                    </div>`;
-        let sesAccessKey = 'stevaganza@gmail.com';
-        let sesSecretKey = 'Jehovah1914@';
-        let transporter = nodemailer.createTransport(smtpTransport({
-            service: 'gmail',
-            auth: {
-                user: sesAccessKey,
-                pass: sesSecretKey
-            }
-        }));
-        const mailOptions = {
-            to: email,
-            from: "no-reply@servantlite.app",
-            text, 
-            html: text
-        };
-        return transporter.sendMail(mailOptions, function(err:Error, info:any){
-            if(err){
-                return {
-                    status: 500,
-                    err
-                }
-            }else{
-               return {
-                   status: 200,
-                   message: "success"
-               };
-            }
-            
-        })
+    var text = `<div>
+        ${message}
+    </div>`;
+    const msg = {
+        to: email,
+        from: "no-reply@servantlite.app",
+        subject: `Test Message`,
+        text: text,
+        html: text
+    };
+    sgMail.setApiKey("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");
+    return sgMail.send(msg);
 
 })

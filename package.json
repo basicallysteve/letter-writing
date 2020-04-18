@@ -6,6 +6,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "deploy": "npm run build; firebase deploy -m 'Deploying latest letter-writing app'",
+    "simulation": "firebase emulators:start",
     "test:unit": "vue-cli-service test:unit",
     "test:e2e": "vue-cli-service test:e2e"
   },
