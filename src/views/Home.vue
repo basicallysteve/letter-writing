@@ -3,7 +3,7 @@
     {{$attrs.user ? `Hello ${$attrs.user.name} ` : null}}
 
 
-    <div>
+    <div v-if="$attrs.user.is_publisher">
       You have {{streets.length}} streets checked out
 
       <b-table :data="streets" v-if="streets.length > 0">
@@ -13,6 +13,9 @@
           <b-table-column field="actions" label="Actions"><b-button @click="returnStreet(props.row)">Return</b-button></b-table-column>
         </template>
       </b-table>
+    </div>
+    <div>
+      Please get in contact with your service committee to finish setting up your account.
     </div>
   </div>
 </template>

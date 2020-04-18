@@ -3,10 +3,14 @@ const fb = require('@/firebaseConfig.js')
 
 export default {
     methods: {
-        addUser(user){
+        async addUser(user){
             let db = firebase.firestore();
-            let newUserRef = db.collection("/users").doc();
-            newUserRef.set(user);
+
+            let congregationSnapshot = await db.collection("/congregation").where("name", "==", "North Coram").get();
+            congregationSnapshot.forEach(doc=>{
+                user.congregation_id = doc.id;
+                db.collection("/users").doc().set(user);
+            })
         },
 
         fetchUser(email){
@@ -47,7 +51,7 @@ export default {
         signout(){
             return firebase.auth().signOut()
         },
-        addTerritory(territory){
+        createTerritory(territory){
             let db = firebase.firestore();
             let newTerritoryRef = db.collection("/territories").doc();
             newTerritoryRef.set(territory);
@@ -124,6 +128,16 @@ export default {
                 })
             })
             return streets;
+        },
+        saveFile(file, path){
+            let storageBucket = firebase.storage().ref()
+            let upload = storageBucket.child(path);
+            return upload.put(file);
+        },
+        deleteFile(path){
+            let storageBucket = firebase.storage().ref();
+            let remove = storageBucket.child(path);
+            return remove.delete()
         }
-    }
+    },
 }

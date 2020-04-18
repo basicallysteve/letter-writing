@@ -26,7 +26,7 @@ const usersCollection = db.collection('users')
 const postsCollection = db.collection('posts')
 const commentsCollection = db.collection('comments')
 const likesCollection = db.collection('likes')
-
+const storage = firebase.storage();
 export {
     db,
     auth,
@@ -34,5 +34,6 @@ export {
     usersCollection,
     postsCollection,
     commentsCollection,
-    likesCollection
+    likesCollection,
+    storage
 }

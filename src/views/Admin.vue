@@ -1,17 +1,20 @@
 <template>
 <div style="width: 75%; margin: auto;">
     <h1 class="title is-4">Admin</h1>
-    <b-table :data="users">
+    <b-table :data="users" :detailed="$attrs.user.is_admin">
         <template v-slot="props">
             <b-table-column label="User">{{props.row.name}}</b-table-column>
             <b-table-column label="Email">{{props.row.email}}</b-table-column>
-            <b-table-column label="Privileges">
-                <b-checkbox v-model="props.row.is_admin" :disabled="$attrs.user ? !$attrs.user.is_super_admin : false" @input="updatePermission(props.row)">Admin</b-checkbox>
-                <b-checkbox v-model="props.row.is_publisher" :disabled="$attrs.user ? !$attrs.user.is_admin : false" @input="updatePermission(props.row)">Publisher</b-checkbox>
-            </b-table-column>
             <b-table-column label="Actions">
                 <b-button type="is-danger" :disabled="$attrs.user ? !$attrs.user.is_super_admin : false" @click="deleteUser(props.row.user_id)">Delete User</b-button>
             </b-table-column>
+        </template>
+        <template slot="detail" slot-scope="props">
+            <div>
+                <b-checkbox v-model="props.row.is_admin" :disabled="$attrs.user ? !$attrs.user.is_super_admin : false" @input="updatePermission(props.row)">Admin</b-checkbox>
+                <b-checkbox v-model="props.row.is_publisher" :disabled="$attrs.user ? !$attrs.user.is_admin : false" @input="updatePermission(props.row)">Publisher</b-checkbox>
+                <b-checkbox v-model="props.row.is_territory_servant" :disabled="$attrs.user ? !$attrs.user.is_admin : false" @input="updatePermission(props.row)">Territory Servant</b-checkbox>
+            </div>
         </template>
     </b-table>
 </div>

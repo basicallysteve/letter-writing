@@ -1,13 +1,18 @@
 <template>
     <div style="width: 75%; display: flex; flex-flow: column; margin: auto;">
-        <div v-if="false" @click="addNewTerritory" style="display: flex; flex-flow: row; justify-content: flex-end;  margin-right: 1em; margin-bottom: 1em;">
-            <b-button size="is-small" icon-left="plus">Add New Territory</b-button>
+        <b-modal :active.sync="territory_form" has-modal-card>
+            <territory-import @newTerritory="addNewTerritory" />
+        </b-modal>
+        <div style="display: flex; flex-flow: row; justify-content: flex-end;  margin-right: 1em; margin-bottom: 1em;">
+            <b-button size="is-small" icon-left="plus" @click="openTerritoryImportWindow" v-if="$attrs.user ? $attrs.user.is_territory_servant || $attrs.user.is_admin : false">Add New Territory</b-button>
         </div>
         <div v-for="territory in territories" :key="territory.territory_id">
         <territory 
          :territory="territory" 
-        @newTerritory="addTerritory" @deleteTerritory="removeTerritory" 
-        :canCD="$attrs.user? $attrs.user.is_admin : false" :userId="$attrs.user ? $attrs.user.user_id : null" 
+        @saveTerritory="saveTerritory"
+        @deleteTerritory="removeTerritory" 
+        @updateTerritory="updateTerritory"
+        :canCD="$attrs.user? $attrs.user.is_admin || $attrs.user.is_territory_servant : false" :userId="$attrs.user ? $attrs.user.user_id : null" 
         @checkoutStreet="checkoutStreet" 
         @returnStreet="returnStreet" 
         @releaseStreet="release"
@@ -18,10 +23,10 @@
 </template>
 <script>
 import firebaseMixin from "@/mixins/firebase.mixin.js";
-
 export default {
     components: {
-        'territory': ()=>import("@/components/Territory")
+        'territory': ()=>import("@/components/Territory"),
+        'territory-import': ()=>import("@/components/TerritoryImport")
     },
     computed: {
         canCheckoutTerritory(){
@@ -40,12 +45,16 @@ export default {
     data(){
         return {
             territories: [],
+            territory_form: false,
             territoryListener: null
         }
     },
     methods: {
-        addNewTerritory(){
-            this.territories.push({})
+        addNewTerritory(territory = {}){
+            this.territories.push(territory)
+        },
+        saveTerritory(territory){
+            this.createTerritory(territory);
         },
         checkoutStreet(territory, oldStreet, street){
             street.last_checkout = new Date();
@@ -54,6 +63,9 @@ export default {
                 this.downloadStreet(territory, street);
             })
 
+        },
+        openTerritoryImportWindow(){
+            this.territory_form = true;
         },
         removeTerritory(territory_id){
             // this.deleteTerritory(territory_id)

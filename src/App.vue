@@ -6,6 +6,9 @@
           <router-link to="/">Home</router-link>
         </b-navbar-item>
         <b-navbar-item>
+          <router-link to="about">About</router-link>
+        </b-navbar-item>
+        <b-navbar-item>
           <router-link to="territories">Territories</router-link>
         </b-navbar-item>
         <b-navbar-item>
@@ -34,14 +37,19 @@
       </div>
     </div>
     <router-view @userChange="changeUser" :user="profile"/>
+    <div><footing /></div>
   </div>
 </template>
 <script>
 import firebase from "firebase";
+import Footer from "./components/Footer";
 const fb = require('./firebaseConfig.js')
 import firebaseMixin from "@/mixins/firebase.mixin.js";
 import messages from "@/mixins/message.mixin.js";
 export default {
+  components: {
+    'footing': Footer
+  },
   data(){
     return {
       currentUser: null,
