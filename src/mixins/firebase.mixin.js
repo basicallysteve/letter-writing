@@ -8,9 +8,10 @@ export default {
 
             let congregationSnapshot = await db.collection("/congregation").where("name", "==", "North Coram").get();
             congregationSnapshot.forEach(doc=>{
+                console.log(doc.data())
                 user.congregation_id = doc.id;
                 db.collection("/users").doc().set(user);
-            })
+            });
         },
 
         fetchUser(email){

@@ -45,7 +45,6 @@ import firebase from "firebase";
 import Footer from "./components/Footer";
 const fb = require('./firebaseConfig.js')
 import firebaseMixin from "@/mixins/firebase.mixin.js";
-
 export default {
   components: {
     'footing': Footer
