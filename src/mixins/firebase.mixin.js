@@ -7,7 +7,6 @@ export default {
             let db = firebase.firestore();
 
             let congregationSnapshot = await db.collection("/congregation").where("name", "==", "North Coram").get();
-            console.log(congregationSnapshot)
             congregationSnapshot.forEach(doc=>{
                 console.log(doc.data())
                 user.congregation_id = doc.id;

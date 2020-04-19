@@ -45,7 +45,6 @@ import firebase from "firebase";
 import Footer from "./components/Footer";
 const fb = require('./firebaseConfig.js')
 import firebaseMixin from "@/mixins/firebase.mixin.js";
-import messages from "@/mixins/message.mixin.js";
 export default {
   components: {
     'footing': Footer
@@ -74,7 +73,7 @@ export default {
       })
     }
   },
-  mixins: [firebaseMixin, messages],
+  mixins: [firebaseMixin],
   mounted(){
     this.currentUser = firebase.auth().currentUser
     if(this.currentUser){
