@@ -34,7 +34,17 @@
                             <b-button :disabled="!$attrs.canCheckout || street.release_from_hold == false" v-if="!street.checked_out" @click="toggleCheckout(street.name, index)">Check Out</b-button>
                             <b-button @click="toggleCheckout(street.name, index)" v-else-if="street.checked_out_by == $attrs.userId">Return</b-button>
                             <b-button v-else disabled>Checked Out</b-button>
-                            <b-button @click="releaseFromHold(street)" v-if="($attrs.canCD ? $attrs.canCD : false ) && street.returned_at != null && !street.release_from_hold">Release from Hold</b-button>
+                            <b-dropdown v-if="($attrs.canCD ? $attrs.canCD : false )">
+                                <b-button slot="trigger" slot-scope="{ active }" :icon-left="active ? 'menu-up' : 'menu-down'">Actions</b-button>
+                                <b-dropdown-item aria-role="listitem" v-if="street.returned_at != null && !street.release_from_hold" @click="releaseFromHold(street)">
+                                    <label class="upload control">Release from Hold</label>
+                                </b-dropdown-item>
+                                <b-dropdown-item aria-role="listitem">
+                                     <b-upload v-model="street.file" accept=".pdf"  @input="uploadStreet($event, street)" :disabled="street.name == null"  v-if="$attrs.canCD">
+                                         Upload Street
+                                    </b-upload>
+                                     </b-dropdown-item>
+                            </b-dropdown>
                         </div>
                         <div class="actions" v-else>
                             <b-upload v-model="street.file" accept=".pdf"  @input="uploadStreet($event, street)" :disabled="street.name == null">
@@ -140,6 +150,10 @@ export default {
         uploadStreet(event, street){
             this.saveFile(event, `territories/${this.territory.name}/${street.name}.pdf`).then(()=>{
                 street.file_uploaded = true;
+                street.pdf_format = true;
+                street.file = null;
+                let territory = JSON.parse(JSON.stringify(this.territory));
+                this.$emit("updateTerritory", territory);
             });
         },
         formatDate(date){

@@ -3,15 +3,13 @@ const fb = require('@/firebaseConfig.js')
 
 export default {
     methods: {
-        addUser(user){
+        async addUser(user){
             let db = firebase.firestore();
-            let congregationSnapshot = db.collection("/congregation").where("name", "==", "North Coram").limit(1).get();
+            let congregationSnapshot = await db.collection("/congregation").where("name", "==", "North Coram").limit(1).get();
             congregationSnapshot.forEach(doc=>{
-                let congregation = doc.data();
-                user.congregation_id = congregation.congregation_id;
-                let newUserRef = db.collection("/users").doc();
-                newUserRef.set(user);
-            })
+                user.congregation_id = doc.id;
+                db.collection("/users").doc().set(user);
+            });
         },
 
         fetchUser(email){
