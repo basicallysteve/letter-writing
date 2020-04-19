@@ -79,3 +79,33 @@ exports.createUser = functions.firestore
                                     })
                                 })
                             })
+
+
+exports.returnedTerritory = functions.firestore
+                                     .document("/territories/{territoryId}")
+                                     .onUpdate(async (change: any, context: Object)=>{
+                                        const oldTerritory = change.before.data() 
+                                        const newterritory = change.after.data();
+                                        for(let street of newterritory.streets){
+                                            let oldStreet = oldTerritory.streets.find((old:any)=>{
+                                                return old.name == street.name;
+                                            })
+                                            if(street.returned_at != oldStreet.returned_at && street.returned_at != null){
+                                                let db = admin.firestore();
+                                                let territoryServants = await db.collection("/users").where("is_territory_servant", "==", true).get()
+                                                territoryServants.forEach((doc:any )=>{
+                                                    let user = doc.data();
+                                                    let mailRef = db.collection("mail").doc();
+                                                    mailRef.set({
+                                                        to: user.email,
+                                                        message: {
+                                                            subject: "Territory Returned Alert",
+                                                            text: `${street.checked_out_name} has returned ${street.name}`,
+                                                            html: `${street.checked_out_name} has returned ${street.name}`,
+                                                        }
+                                                    })
+                                                })
+                                            }
+                                        }
+                                       
+                                     })
