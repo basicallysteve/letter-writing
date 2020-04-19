@@ -1,5 +1,4 @@
 let functions = require('firebase-functions');
-const sgMail = require("@sendgrid/mail");
 
 const admin = require("firebase-admin");
 
@@ -41,20 +40,42 @@ export const deleteUser = functions.https.onCall((userId: string)=>{
 })
 
 
-exports.emailMessage = functions.https.onCall((req:any)=>{
-    console.log(req);
-    const { email, message } = req;
-    var text = `<div>
-        ${message}
-    </div>`;
-    const msg = {
-        to: email,
-        from: "no-reply@servantlite.app",
-        subject: `Test Message`,
-        text: text,
-        html: text
-    };
-    sgMail.setApiKey("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");
-    return sgMail.send(msg);
+// exports.emailMessage = functions.https.onCall((req:any)=>{
+//     console.log(req);
+//     const { email, message } = req;
+//     var text = `<div>
+//         ${message}
+//     </div>`;
+//     const msg = {
+//         to: email,
+//         from: "no-reply@servantlite.app",
+//         subject: `Test Message`,
+//         text: text,
+//         html: text
+//     };
+//     sgMail.setApiKey("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");
+//     return sgMail.send(msg);
 
-})
+// })
+
+
+exports.createUser = functions.firestore
+                              .document("/users/{userId}")
+                              .onCreate(async (snap: any, context: Object)=>{
+                                const newUser:any = snap.data();
+
+                                let db = admin.firestore();
+                                let admins = await db.collection("/users").where("is_admin", "==", true).get()
+                                admins.forEach((doc:any )=>{
+                                    let user = doc.data();
+                                    let mailRef = db.collection("mail").doc();
+                                    mailRef.set({
+                                        to: user.email,
+                                        message: {
+                                            subject: "New User Alert",
+                                            text: `${newUser.name} has been added to the Letter Writing App! Please verify that this user is a member of your congregation`,
+                                            html: `${newUser.name} has been added to the Letter Writing App! Please verify that this user is a member of your congregation`,
+                                        }
+                                    })
+                                })
+                            })
