@@ -12,8 +12,8 @@
         </b-field>
     </div>
     <div>
-        <b-button @click="referFriend">Refer Friends in another hall!</b-button>
-        <b-button>Invite Friends in Your Hall!</b-button>
+        <b-button>Refer Friends in another hall!</b-button>
+        <b-button @click="referFriend">Invite Friends in Your Hall!</b-button>
     </div>
 </div>
 </template>

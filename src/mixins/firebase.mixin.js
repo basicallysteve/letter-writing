@@ -1,15 +1,17 @@
 import firebase from "firebase";
+import moment from "moment";
 const fb = require('@/firebaseConfig.js')
 
 export default {
     methods: {
-        async addUser(user){
+        async addUser(user, referral_id){
             let db = firebase.firestore();
-            let congregationSnapshot = await db.collection("/congregation").where("name", "==", "North Coram").limit(1).get();
-            congregationSnapshot.forEach(doc=>{
-                user.congregation_id = doc.id;
-                db.collection("/users").doc().set(user);
-            });
+            let referralResponse =  await this.fetchReferral(referral_id);
+            let referral = referralResponse.data();
+            let friend = await this.fetchUserById(referral.user_id);
+            user.congregation_id = friend.congregation_id;
+            db.collection("/users").doc().set(user);
+            this.useReferral(referral_id, referral);
         },
 
         fetchUser(email){
@@ -152,6 +154,29 @@ export default {
             let functions = firebase.functions();
             let callable = functions.httpsCallable("referFriend");
             callable({email, user_id});
+        },
+        fetchReferral(id){
+            let db = firebase.firestore();
+            return db.collection("/referrals").doc(id).get();
+        },
+        async checkReferral(code, email){
+            let db = firebase.firestore();
+            let today = moment(Date.now());
+            let snapshot = await db.collection("/referrals").where("code", "==", code)
+                                                      .where("email", "==", email)
+                                                      .where("used", "==", false)
+                                                      .limit(1).get();
+            if(snapshot.docs.length == 1){
+                let created_at_date = moment(snapshot.docs[0].data().created_at.toDate());
+                let difference = today.diff(created_at_date, "hours");
+                return {validation: difference < 23, referral_id: snapshot.docs[0].id};
+            }
+            return {validation: false, referral_id};
+        },
+        useReferral(referral_id, referral){
+            let db = firebase.firestore();
+            referral.used = true;
+            db.collection("/referrals").doc(referral_id).update(referral);
         }
     },
 
