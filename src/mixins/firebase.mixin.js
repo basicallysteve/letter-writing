@@ -147,6 +147,14 @@ export default {
             snapshot.then(response=>{
                 console.log(response.docs);
             })
+        },
+        referFriend(email, user_id){
+            let functions = firebase.functions();
+            let callable = functions.httpsCallable("referFriend");
+            callable({email, user_id});
         }
     },
+
+
+    
 }

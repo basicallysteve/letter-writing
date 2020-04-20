@@ -1,6 +1,9 @@
 <template>
 <div style="width: 75%; margin: auto;">
     <h1 class="title is-4">Admin</h1>
+    <profile :user="$attrs.user"/>
+
+    <hr />
     <b-table :data="users" :detailed="$attrs.user.is_admin">
         <template v-slot="props">
             <b-table-column label="User">{{props.row.name}}</b-table-column>
@@ -21,9 +24,13 @@
 </template>
 <script>
 import firebaseMixin from "@/mixins/firebase.mixin";
+import Profile from  "@/views/Profile";
 export default {
     beforeDestroy(){
         this.userListener
+    },
+    components: {
+        Profile
     },
     data(){
         return {

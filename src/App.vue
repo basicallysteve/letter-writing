@@ -13,11 +13,14 @@
         </b-navbar-item>
         <b-navbar-item>
           <router-link to="admin" v-if="profile ? profile.is_admin : false">Admin</router-link>
+          <router-link to="profile" v-else>Profile</router-link>
         </b-navbar-item>
+          
+
       </template>
       <template #end>
-         <b-navbar-item v-if="currentUser == null">
-           <router-link to="login">Login</router-link></b-navbar-item>
+        <b-navbar-item v-if="currentUser == null">
+          <router-link to="login">Login</router-link></b-navbar-item>
         <b-navbar-item v-else>
           <a class="router-link" @click="signOut">Logout</a>
         </b-navbar-item>

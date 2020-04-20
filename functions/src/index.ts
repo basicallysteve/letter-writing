@@ -3,6 +3,7 @@ let functions = require('firebase-functions');
 const admin = require("firebase-admin");
 
 let serviceAccount = require("../serviceAccountKey.json");
+let {createReferral} = require("./modules/referrals");
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -39,25 +40,34 @@ export const deleteUser = functions.https.onCall((userId: string)=>{
     }
 })
 
+export const referFriend = functions.https.onCall((referralInfo: any)=>{
+    return createReferral(referralInfo.email, referralInfo.user_id);
+});
 
-// exports.emailMessage = functions.https.onCall((req:any)=>{
-//     console.log(req);
-//     const { email, message } = req;
-//     var text = `<div>
-//         ${message}
-//     </div>`;
-//     const msg = {
-//         to: email,
-//         from: "no-reply@servantlite.app",
-//         subject: `Test Message`,
-//         text: text,
-//         html: text
-//     };
-//     sgMail.setApiKey("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");
-//     return sgMail.send(msg);
+exports.sendReferralEmail = functions.firestore
+                                     .document("/referrals/{referralId}")
+                                     .onCreate(async (snap: any, context: Object)=>{
+                                        let db = admin.firestore();
+                                        let mailRef = db.collection("mail").doc();
+                                        let userDoc = await db.collection("/users").doc(snap.data().user_id).get();
 
-// })
-
+                                        mailRef.set({
+                                            to: snap.data().email,
+                                            message: {
+                                                subject: "Letter Writing App Referral",
+                                                html: `<div>
+                                                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css">
+                                                <div>
+                                                    <h1 class="title is-2">Hello!</h1>
+                                                    <div style="display: flex; flex-flow: column;">
+                                                        <p>You have be referred to join the <a href="https://letter-writing-app.web.app/signup" target="_blank">Letter Writing App</a> by ${userDoc.data().name}. Below you will find your referral code. Please use it within 24 hours otherwise it will be invalid.</p>
+                                                        <code>${snap.data().code}</code>
+                                                    </div>
+                                                </div>
+                                                </div>`
+                                            }
+                                        })
+                                     })
 
 exports.createUser = functions.firestore
                               .document("/users/{userId}")
