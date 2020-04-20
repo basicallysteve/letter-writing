@@ -30,7 +30,7 @@
                 <meeting-time v-for="(meeting, index) in congregation.meetings" v-model="congregation.meetings[index]" style="margin: 1em;" :key="index"/>
             </div>
         </div>
-        <b-button style="margin-top: .5em; margin-bottom: .5em;" native-type="submit" type="is-primary" :disabled="!congregationValid">Create Congregation</b-button>
+        <b-button style="margin-top: .5em; margin-bottom: .5em;" native-type="submit" type="is-primary" :disabled="!congregationValid" @click="setupCongregation">Create Congregation</b-button>
     </form>
     
     </div>
@@ -38,6 +38,7 @@
 <script>
 import MeetingTime from "@/components/MeetingTime";
 import firebase from "@/mixins/firebase.mixin.js";
+import congregation from "@/mixins/congregation.mixin.js";
 import moment from "moment";
 export default {
     components: {
@@ -64,7 +65,6 @@ export default {
                     zip_code: null,
                 },
                 name: null,
-                id: null
             },
             autocomplete: null
         }
@@ -78,6 +78,9 @@ export default {
                 let place = this.autocomplete.getPlace();
                 let ac = place.address_components
                 this.congregation.address = this.getAddress(ac);
+                this.fetchCongregationAddress(this.congregation.address).then(response=>{
+                    this.congregation.address_id = response;
+                });
             });
         },
         getAddress(mapsAddress){
@@ -112,9 +115,19 @@ export default {
                 }
             }
             return address
+        },
+        setupCongregation(){
+            let congregation = JSON.parse(JSON.stringify(this.congregation))
+            congregation.meeting_times = [];
+            for(let meeting of congregation.meetings){
+                congregation.meeting_times.push(meeting.meeting_id) ;
+            }
+            delete congregation.meetings;
+            delete congregation.address;
+            this.createCongregation(congregation);
         }
     },
-    mixins: [firebase],
+    mixins: [firebase, congregation],
     mounted(){
         this.initAutocomplete();
     },
