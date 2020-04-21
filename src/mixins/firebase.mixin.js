@@ -169,9 +169,11 @@ export default {
             if(snapshot.docs.length == 1){
                 let created_at_date = moment(snapshot.docs[0].data().created_at.toDate());
                 let difference = today.diff(created_at_date, "hours");
-                return {validation: difference < 23, referral_id: snapshot.docs[0].id};
+                let userDoc = await this.fetchUserById(snapshot.docs[0].data().user_id);
+                let user = userDoc.data()
+                return {validation: difference < 23, referral_id: snapshot.docs[0].id, default_congregation_id: user.congregation_id, from_admin: user.is_admin};
             }
-            return {validation: false, referral_id};
+            return {validation: false, referral_id: null};
         },
         useReferral(referral_id, referral){
             let db = firebase.firestore();

@@ -38,7 +38,21 @@ export default {
         createCongregation(congregation){
             let ref = this.db.collection("/congregation").doc();
             congregation.congregation_id = ref.id;
+            console.log(congregation);
             ref.set(congregation);
+            return ref.id;
+        },
+        async fetchCongregationsByName(name){
+            let congregations = [];
+            let snapshot = name == null ? await this.db.collection("/congregation").limit(20).get() : await this.db.collection("/congregation").where("name", "==", name).limit(20).get();
+            snapshot.forEach(congregationSnapshot=>{
+                congregations.push(congregationSnapshot.data());
+            })
+            return congregations;
+        },
+        async fetchCongregation(id){
+            let ref = await this.db.collection("/congregation").doc(id).get();
+            return ref.data();
         }
     }
 }

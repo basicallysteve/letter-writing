@@ -38,6 +38,7 @@
 <script>
 import MeetingTime from "@/components/MeetingTime";
 import firebase from "@/mixins/firebase.mixin.js";
+const fb = require("@/firebaseConfig.js");
 import congregation from "@/mixins/congregation.mixin.js";
 import moment from "moment";
 export default {
@@ -124,7 +125,14 @@ export default {
             }
             delete congregation.meetings;
             delete congregation.address;
-            this.createCongregation(congregation);
+            let congregation_id = this.createCongregation(congregation);
+            fb.auth.createUserWithEmailAndPassword(this.$route.params.signUp.email, this.$route.params.signUp.password).then(user => {
+                    this.addUser({name: this.$route.params.signUp.name, email: this.$route.params.signUp.email, is_super_admin: false, is_admin: true, is_publisher: false, congregation_id}, this.$route.params.referral_id);
+                    this.$emit('userChange', user)
+                    this.$router.push("/");
+                }).catch(err => {
+                    console.log(err)
+                })
         }
     },
     mixins: [firebase, congregation],

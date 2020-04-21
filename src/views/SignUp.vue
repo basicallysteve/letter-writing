@@ -13,14 +13,19 @@
             <b-field label="Referral Code">
                 <b-input v-model="signUp.referral" type="text" placeholder="Referral Code" @blur="validateReferral" />
             </b-field>
+            <congregation-search v-model="signUp.congregation" :disabled="!cantAddNewCongregation" :signUp="signUp" :referral_id="referral_id"/>
         </div>
-        <b-button style="margin-top: .5em;" native-type="submit" type="is-primary" v-if="validReferral">Sign Up</b-button>
+        <b-button style="margin-top: .em;" native-type="submit" type="is-primary" v-if="validReferral">Sign Up</b-button>
     </form>
 </template>
 <script>
 const fb = require("@/firebaseConfig.js");
 import firebaseMixin from "@/mixins/firebase.mixin.js";
+import CongregationSearch from "@/components/CongregationSearch";
 export default {
+    components: {
+        CongregationSearch
+    },
     computed: {
     },
     data(){
@@ -29,10 +34,15 @@ export default {
                 name: null,
                 email: null,
                 password: null,
-                referral: null
+                referral: null,
+                congregation: {
+                    congregation_id: null,
+                    name: null
+                }
             },
             validReferral: false,
-            referral_id: null
+            referral_id: null,
+            cantAddNewCongregation: false
         }
     },
     methods: {
@@ -46,8 +56,10 @@ export default {
             })
         },
         async validateReferral(){
-            let {validation, referral_id} = await this.checkReferral(this.signUp.referral, this.signUp.email)
+            let {validation, referral_id, default_congregation_id, from_admin} = await this.checkReferral(this.signUp.referral, this.signUp.email)
+            this.signUp.congregation.congregation_id = default_congregation_id;
             this.validReferral = validation;
+            this.cantAddNewCongregation = from_admin;
             if(this.validReferral){
                 this.referral_id = referral_id;
             }

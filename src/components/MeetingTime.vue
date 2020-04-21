@@ -12,7 +12,7 @@
             </b-select>
         </b-field>
         <b-field horizontal label="Time">
-           <b-timepicker icon="clock" :incrementMinutes="15" v-model="meetingTime.time" @blur="loadMeetingTime" @keydown.tab="loadMeetingTime" hour-format="12" editable/>
+           <b-timepicker icon="clock" :incrementMinutes="15" v-model="meetingTime.time" @blur="loadMeetingTime" hour-format="12" editable/>
         </b-field>
     </div>
 </template>
@@ -32,11 +32,12 @@ export default {
     },
     methods: {
         async loadMeetingTime(){
-            let time = moment(this.meetingTime.time).format("HH:mm A")
+            let time = moment(this.meetingTime.time).format("hh:mm A")
             this.meetingTime.meeting_id = await this.findMeetingTimes(this.meetingTime.day, time);
             if(!this.meetingTime.meeting_id){
                 let reference = await this.createNewMeetingTime(this.meetingTime.day, time);
                 this.meetingTime.meeting_id = reference;
+                console.log("ready!");
             }
         }
     },
