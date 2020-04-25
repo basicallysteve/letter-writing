@@ -9,6 +9,7 @@
             <b-table-column label="User">{{props.row.name}}</b-table-column>
             <b-table-column label="Email">{{props.row.email}}</b-table-column>
             <b-table-column label="Actions">
+                <b-button :disabled="$attrs.user ? !$attrs.user.is_admin : false" @click="moveHalls(props.row.user_id)">Move Halls</b-button>
                 <b-button type="is-danger" :disabled="$attrs.user ? !$attrs.user.is_super_admin : false" @click="deleteUser(props.row.user_id)">Delete User</b-button>
             </b-table-column>
         </template>
@@ -39,6 +40,9 @@ export default {
         }
     },
     methods: {
+        moveHalls(user){
+
+        },
         loadUsers(){
             this.fetchUsers(this.$attrs.user.congregation_id).then(users=>{
                 this.users = users;

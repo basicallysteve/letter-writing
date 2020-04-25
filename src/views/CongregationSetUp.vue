@@ -117,7 +117,7 @@ export default {
             }
             return address
         },
-        setupCongregation(){
+        async setupCongregation(){
             let congregation = JSON.parse(JSON.stringify(this.congregation))
             congregation.meeting_times = [];
             for(let meeting of congregation.meetings){
@@ -125,7 +125,7 @@ export default {
             }
             delete congregation.meetings;
             delete congregation.address;
-            let congregation_id = this.createCongregation(congregation);
+            let congregation_id = await this.createCongregation(congregation);
             fb.auth.createUserWithEmailAndPassword(this.$route.params.signUp.email, this.$route.params.signUp.password).then(user => {
                     this.addUser({name: this.$route.params.signUp.name, email: this.$route.params.signUp.email, is_super_admin: false, is_admin: true, is_publisher: false, congregation_id}, this.$route.params.referral_id);
                     this.$emit('userChange', user)

@@ -60,6 +60,14 @@ const routes = [
       requiresAuth: true
     },
     component: ()=> import("@/views/Admin.vue")
+  },
+  {
+    path: "/profile",
+    name: "Profile",
+    meta:{
+      requiresAuth: true,
+    },
+    component: ()=> import("@/views/Profile.vue")
   }
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
@@ -77,10 +85,9 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(x => x.meta.requiresAuth)
   const currentUser = firebase.auth().currentUser
-  console.log(to);
-  if (requiresAuth && !currentUser) {
+  if (requiresAuth && !currentUser && !to.params.override) {
       next('/login')
-  } else if (requiresAuth && currentUser) {
+  } else if ((requiresAuth && currentUser) || to.params.override) {
       next()
   } else {
       next()

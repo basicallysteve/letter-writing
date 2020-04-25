@@ -1,9 +1,9 @@
 <template>
-<div>
+<div style="margin-bottom: 1em;">
     <b-modal :active.sync="refer" has-modal-card>
         <referral-form :user="user.user_id"/>
     </b-modal>
-    <div style="display: flex; flex-flow: row;">
+    <div style="display: flex; flex-flow: row; justify-content: space-around">
         <b-field label="Name" style="">
             <b-input v-model="user.name" disabled/>
         </b-field>
@@ -12,8 +12,7 @@
         </b-field>
     </div>
     <div>
-        <b-button>Refer Friends in another hall!</b-button>
-        <b-button @click="referFriend">Invite Friends in Your Hall!</b-button>
+        <b-button @click="referFriend">Invite Friends!</b-button>
     </div>
 </div>
 </template>

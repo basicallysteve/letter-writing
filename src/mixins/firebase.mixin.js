@@ -8,8 +8,7 @@ export default {
             let db = firebase.firestore();
             let referralResponse =  await this.fetchReferral(referral_id);
             let referral = referralResponse.data();
-            let friend = await this.fetchUserById(referral.user_id);
-            user.congregation_id = friend.congregation_id;
+            console.log(referral);
             db.collection("/users").doc().set(user);
             this.useReferral(referral_id, referral);
         },

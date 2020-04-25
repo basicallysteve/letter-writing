@@ -4,7 +4,7 @@
             <div style="display:flex; flex-flow: row; width: 100%">
             <b-autocomplete v-model="congregation.name" :data="congregations" field="name" placeholder="Search..." type="search" style="width: 100%; border-bottom-right-radius: 0; border-top-right-radius: 0;" :loading="isLoading" @select="selectCongregation" open-on-focus :disabled="disabled"></b-autocomplete>
             <p class="control" v-if="!disabled">
-                <b-button tag="router-link" :to="{name: 'Congregations', params: {signUp, referral_id}}" type="is-link" class="button is-primary" style="border-bottom-left-radius: 0; border-top-left-radius: 0; margin: 0;">New Congregation</b-button>
+                <b-button tag="router-link" :to="{name: 'Congregations', params: {signUp, referral_id, override: true}}" type="is-link" class="button is-primary" style="border-bottom-left-radius: 0; border-top-left-radius: 0; margin: 0;">New Congregation</b-button>
             </p>
             </div>
         </b-field>
