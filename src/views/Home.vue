@@ -9,7 +9,7 @@
       <b-table :data="streets" v-if="streets.length > 0">
         <template v-slot="props">
           <b-table-column field="street_name" label="Street Name">{{props.row.name}}</b-table-column>
-          <b-table-column field="checkout_date" label="Checked Out">{{props.row.last_checkout.toDate()}}</b-table-column>
+          <!-- <b-table-column field="checkout_date" label="Checked Out">{{props.row.last_checkout}}</b-table-column> -->
           <b-table-column field="actions" label="Actions"><b-button @click="returnStreet(props.row)">Return</b-button></b-table-column>
         </template>
       </b-table>
