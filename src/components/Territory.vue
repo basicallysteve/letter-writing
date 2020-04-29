@@ -69,7 +69,6 @@
 <script>
 import moment from "moment";
 import firebaseMixin from "@/mixins/firebase.mixin";
-import firebase from "firebase";
 export default {
     computed: {
         formattedTerritory(){
@@ -78,7 +77,6 @@ export default {
                 for await(let street of this.territory.streets){
                     let user = street.checked_out_by ? await this.fetchUserById(street.checked_out_by) : null;
                     if(user != null){
-                        // street.returned_at =  new firebase.TimeStamp(street.returned_at);
                         street.checked_out_name = user.data().name;
                     }
                 }
@@ -163,7 +161,7 @@ export default {
             }else if(!date.toDate){
                 return text
             }
-            return `${text} ${moment(date.toDate()).format("MM/DD/Y")}`;
+            return `${text} at ${moment(date.toDate()).format("MM/DD/Y")}`;
         }
     },
     props: {

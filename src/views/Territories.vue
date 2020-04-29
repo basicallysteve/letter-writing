@@ -33,10 +33,8 @@ export default {
     computed: {
         canCheckoutTerritory(){
             let doesntHaveTerritory = true;
-            let checkedOutStreet;
             for(let territory of this.territories){
                 for(let street of territory.streets){
-                    checkedOutStreet = street;
                     doesntHaveTerritory = street.checked_out_by == this.user.user_id && this.user.is_publisher;
                 }
                 if(!doesntHaveTerritory){
