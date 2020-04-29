@@ -22,8 +22,8 @@
                     <div v-for="(street, index) in formattedTerritory.streets" :key="index" class="street">
                         <div style="margin-right: 1em;" class="info" v-if="territory.territory_id">
                             {{street.name}} | {{street.houses}} houses 
-                            {{street.last_checkout != null ? `| Checked out at ${formatDate(street.last_checkout.toDate ? street.last_checkout.toDate() : null)} by ${street.checked_out_name}` : ""}}
-                            {{street.returned_at != null ? `| Returned at ${formatDate(street.returned_at.toDate ? street.returned_at.toDate() : null)}` : ""}}
+                            {{street.last_checkout != null ? `| ${formatDate(street.last_checkout, "Checked out")} by ${street.checked_out_name}` : ""}}
+                            {{street.returned_at != null ? `| ${formatDate(street.returned_at, "Returned")}` : ""}}
                         </div>
                         <div class="info inputs" v-else>
                             <b-input type="text" v-model="street.name" placeholder="Main Street" style="margin-right: 1em;"/>
@@ -69,6 +69,7 @@
 <script>
 import moment from "moment";
 import firebaseMixin from "@/mixins/firebase.mixin";
+import firebase from "firebase";
 export default {
     computed: {
         formattedTerritory(){
@@ -77,8 +78,8 @@ export default {
                 for await(let street of this.territory.streets){
                     let user = street.checked_out_by ? await this.fetchUserById(street.checked_out_by) : null;
                     if(user != null){
+                        // street.returned_at =  new firebase.TimeStamp(street.returned_at);
                         street.checked_out_name = user.data().name;
-                        this.$forceUpdate()
                     }
                 }
             })()
@@ -156,8 +157,13 @@ export default {
                 this.$emit("updateTerritory", territory);
             });
         },
-        formatDate(date){
-            return moment(date).format("MM/DD/Y")
+        formatDate(date, text){
+            if(!date){
+                return null
+            }else if(!date.toDate){
+                return text
+            }
+            return `${text} ${moment(date.toDate()).format("MM/DD/Y")}`;
         }
     },
     props: {
@@ -166,6 +172,14 @@ export default {
             default(){
                 return {
                     streets: []
+                }
+            }
+        },
+        user: {
+            type: Object,
+            default(){
+                return {
+                    user_id:null
                 }
             }
         }
