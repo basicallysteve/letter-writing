@@ -52,7 +52,9 @@ export default {
   data(){
     return {
       currentUser: null,
-      profile: null
+      profile: {
+        is_publisher: false
+      }
     }
   },
 
@@ -78,8 +80,7 @@ export default {
     this.currentUser = firebase.auth().currentUser
     if(this.currentUser){
       this.fetchUser(this.currentUser.email).then(querySnap=>{
-          let user = null;
-          return querySnap.forEach(doc=>{
+          querySnap.forEach(doc=>{
               this.profile = {...doc.data(), user_id: doc.id};
           })
       });

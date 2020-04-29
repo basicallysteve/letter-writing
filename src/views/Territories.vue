@@ -9,10 +9,12 @@
         <div v-for="territory in territories" :key="territory.territory_id">
         <territory 
          :territory="territory" 
+  
         @saveTerritory="saveTerritory"
         @deleteTerritory="removeTerritory" 
         @updateTerritory="updateTerritory"
-        :canCD="$attrs.user? $attrs.user.is_admin || $attrs.user.is_territory_servant : false" :userId="$attrs.user ? $attrs.user.user_id : null" 
+        :canCD="$attrs.user? $attrs.user.is_admin || $attrs.user.is_territory_servant : false" 
+        :userId="user.user_id" 
         @checkoutStreet="checkoutStreet" 
         @returnStreet="returnStreet" 
         @releaseStreet="release"
@@ -33,7 +35,7 @@ export default {
             let doesntHaveTerritory = true;
             for(let territory of this.territories){
                 for(let street of territory.streets){
-                    doesntHaveTerritory = this.$attrs.user ? street.checked_out_by != this.$attrs.user.user_id && this.$attrs.user.is_publisher : false;
+                    doesntHaveTerritory = street.checked_out_by == this.user.user_id && this.user.is_publisher;
                 }
                 if(!doesntHaveTerritory){
                     break;
@@ -98,5 +100,15 @@ export default {
         })
 
     },
+    props: {
+        user: {
+            type: Object,
+            default(){
+                return {
+                    user_id: null
+                }
+            }
+        }
+    }
 }
 </script>
