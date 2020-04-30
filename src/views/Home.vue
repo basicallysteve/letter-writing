@@ -1,9 +1,9 @@
 <template>
   <div class="home" style="width: 75%; display: flex; flex-flow: column; margin: auto;">
-    {{$attrs.user ? `Hello ${$attrs.user.name} ` : null}}
+    {{user ? `Hello ${user.name} ` : null}}
 
 
-    <div v-if="$attrs.user.is_publisher">
+    <div v-if="user.is_publisher">
       You have {{streets.length}} streets checked out
 
       <b-table :data="streets" v-if="streets.length > 0">
@@ -14,7 +14,7 @@
         </template>
       </b-table>
     </div>
-    <div>
+    <div v-else>
       Please get in contact with your service committee to finish setting up your account.
     </div>
   </div>
@@ -32,7 +32,7 @@ export default {
   },
   methods: {
     loadStreetsForUser(){
-      this.fetchStreets(this.$attrs.user.user_id).then(response=>{
+      this.fetchStreets(this.user.user_id).then(response=>{
           this.streets = response
         })
     },
@@ -53,11 +53,19 @@ export default {
       this.loadStreetsForUser();
     })
   },
+  props: {
+    user: {
+      type: Object,
+      default(){
+        return {}
+      }
+    }
+  },
   watch: {
-    '$attrs.user': {
+    'user': {
       immediate: true,
       handler(){
-        if(this.$attrs.user){
+        if(this.user){
           this.loadStreetsForUser();
         }
       }
