@@ -41,9 +41,7 @@ export default {
       street.checked_out = false;
       let territory =  street.territory;
       delete street.territory;
-      this.updateStreet(territory, null, street).then(()=>{
-
-})
+      this.updateStreet(territory, null, street).then(()=>{})
     }
   },
   mixins: [firebaseMixin],

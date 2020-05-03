@@ -124,7 +124,6 @@ export default {
                 territory.streets.forEach(street=>{
                     if(street.checked_out_by == user_id && street.checked_out){
                         street.territory = territory;
-                        street.last_checkout = new firebase.firestore.Timestamp(street.last_checkout);
                         streets.push(street);
                     }
                 })
