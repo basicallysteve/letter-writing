@@ -59,7 +59,6 @@ export default {
         async fetchTerritories(congregation_id){
             let db = firebase.firestore();
             let territories = []
-            console.log(congregation_id);
             let territoriesSnapshot = await db.collection("/territories").where("congregation_id", "==", congregation_id).orderBy("name", "asc").get();
             territoriesSnapshot.forEach(doc=>{
                 let territory = doc.data();
