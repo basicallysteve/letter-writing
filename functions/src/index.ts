@@ -75,7 +75,7 @@ exports.createUser = functions.firestore
                                 const newUser:any = snap.data();
 
                                 let db = admin.firestore();
-                                let admins = await db.collection("/users").where("is_admin", "==", true).get()
+                                let admins = await db.collection("/users").where("is_admin", "==", true).where("congreagation_id", "==", newUser.congreagation_id).get()
                                 admins.forEach((doc:any )=>{
                                     let user = doc.data();
                                     let mailRef = db.collection("mail").doc();
