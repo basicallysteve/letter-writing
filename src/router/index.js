@@ -37,6 +37,7 @@ const routes = [
     },
     component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
   },
+  
   {
     path: '/territories',
     name: 'Territory',
@@ -52,6 +53,14 @@ const routes = [
       requiresAuth: true
     },
     component: ()=> import("@/views/Admin.vue")
+  },
+  {
+    path: "/imports",
+    name: "Import",
+    meta: {
+      requiresAuth: false
+    },
+    component: ()=>import("@/views/Import.vue")
   }
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
