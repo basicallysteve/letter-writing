@@ -127,7 +127,7 @@ export default {
             delete congregation.address;
             let congregation_id = await this.createCongregation(congregation);
             fb.auth.createUserWithEmailAndPassword(this.$route.params.signUp.email, this.$route.params.signUp.password).then(user => {
-                    this.addUser({name: this.$route.params.signUp.name, email: this.$route.params.signUp.email, is_super_admin: false, is_admin: true, is_publisher: false, congregation_id}, this.$route.params.referral_id);
+                    this.addUser({name: this.$route.params.signUp.name, email: this.$route.params.signUp.email, is_super_admin: false, is_admin: true, is_publisher: true, congregation_id}, this.$route.params.referral_id);
                     this.$emit('userChange', user)
                     this.$router.push("/");
                 }).catch(err => {

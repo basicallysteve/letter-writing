@@ -12,7 +12,7 @@
             </b-select>
         </b-field>
         <b-field horizontal label="Time">
-           <b-timepicker icon="clock" :incrementMinutes="15" v-model="meetingTime.time" @blur="loadMeetingTime" hour-format="12" editable/>
+           <b-timepicker icon="clock" :incrementMinutes="15" v-model="meetingTime.time" @change="loadMeetingTime" hour-format="12" editable/>
         </b-field>
     </div>
 </template>

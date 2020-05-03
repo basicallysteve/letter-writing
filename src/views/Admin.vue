@@ -9,7 +9,7 @@
             <b-table-column label="User">{{props.row.name}}</b-table-column>
             <b-table-column label="Email">{{props.row.email}}</b-table-column>
             <b-table-column label="Actions">
-                <b-button :disabled="user ? !user.is_admin : false" @click="moveHalls(props.row.user_id)" style="margin-right: .5em;">Move Halls</b-button>
+                <b-button :disabled="user ? !user.is_admin : false" @click="moveHalls(props.row.user_id)" style="margin-right: .5em;" v-if="false">Move Halls</b-button>
                 <b-button type="is-danger" :disabled="user ? !user.is_super_admin : false" @click="deleteUser(props.row.user_id)">Delete User</b-button>
             </b-table-column>
         </template>
