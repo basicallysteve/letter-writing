@@ -82,8 +82,8 @@ export default {
             // this.deleteTerritory(territory_id)
         },
         loadTerritories(){
-            if(this.$attrs.user){
-                this.fetchTerritories(this.$attrs.user.congregation_id).then(response=>{
+            if(this.user){
+                this.fetchTerritories(this.user.congregation_id).then(response=>{
                     this.territories = response;
                 })
             }

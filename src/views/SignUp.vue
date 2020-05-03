@@ -48,7 +48,7 @@ export default {
     methods: {
         signUpUser(){
             fb.auth.createUserWithEmailAndPassword(this.signUp.email, this.signUp.password).then(user => {
-                this.addUser({name: this.signUp.name, email: this.signUp.email, is_super_admin: false, is_admin: false, is_publisher: false}, this.referral_id);
+                this.addUser({name: this.signUp.name, email: this.signUp.email, is_super_admin: false, is_admin: false, is_publisher: true, congregation_id: this.signUp.congregation.congregation_id}, this.referral_id);
                 this.$emit('userChange', user)
                 this.$router.push("/");
             }).catch(err => {
