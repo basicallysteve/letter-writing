@@ -32,6 +32,7 @@ export default {
     methods: {
         sendReferral(){
             this.referFriend(this.email, this.$attrs.user);
+            this.$parent.close();
         }
     },
     mixins: [firebase]

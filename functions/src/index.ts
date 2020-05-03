@@ -1,5 +1,5 @@
 let functions = require('firebase-functions');
-
+let moment = require("moment");
 const admin = require("firebase-admin");
 
 let serviceAccount = require("../serviceAccountKey.json");
@@ -50,7 +50,6 @@ exports.sendReferralEmail = functions.firestore
                                         let db = admin.firestore();
                                         let mailRef = db.collection("mail").doc();
                                         let userDoc = await db.collection("/users").doc(snap.data().user_id).get();
-
                                         mailRef.set({
                                             to: snap.data().email,
                                             message: {
@@ -119,3 +118,19 @@ exports.returnedTerritory = functions.firestore
                                         }
                                        
                                      })
+
+exports.referralCleaner = functions.pubsub
+                                   .schedule("0 0 * * *")
+                                   .onRun(async (context:any)=>{
+                                        let db = admin.firestore();
+                                        let referrals = await db.collection("/referrals").where("used", "==", false ).get()
+                                        referrals.forEach((doc:any)=>{
+                                            let created_at_date = moment(doc.data().created_at.toDate());
+                                            let today = moment(Date.now());
+                                            let difference = today.diff(created_at_date, "hours");
+                                            if(difference > 23){
+                                                db.collection("/referrals").delete(doc.id);
+                                            }
+                                        })
+                                    })
+                                    
