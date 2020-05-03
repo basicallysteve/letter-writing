@@ -4,15 +4,17 @@
             <territory-import @newTerritory="addNewTerritory" />
         </b-modal>
         <div style="display: flex; flex-flow: row; justify-content: flex-end;  margin-right: 1em; margin-bottom: 1em;">
-            <b-button size="is-small" icon-left="plus" @click="openTerritoryImportWindow" v-if="$attrs.user ? $attrs.user.is_territory_servant || $attrs.user.is_admin : false">Add New Territory</b-button>
+            <b-button size="is-small" icon-left="plus" @click="openTerritoryImportWindow" v-if="user ? user.is_territory_servant || user.is_admin : false">Add New Territory</b-button>
         </div>
         <div v-for="territory in territories" :key="territory.territory_id">
         <territory 
          :territory="territory" 
+  
         @saveTerritory="saveTerritory"
         @deleteTerritory="removeTerritory" 
         @updateTerritory="updateTerritory"
-        :canCD="$attrs.user? $attrs.user.is_admin || $attrs.user.is_territory_servant : false" :userId="$attrs.user ? $attrs.user.user_id : null" 
+        :canCD="user? user.is_admin || user.is_territory_servant : false" 
+        :userId="user.user_id" 
         @checkoutStreet="checkoutStreet" 
         @returnStreet="returnStreet" 
         @releaseStreet="release"
@@ -31,10 +33,19 @@ export default {
     computed: {
         canCheckoutTerritory(){
             let doesntHaveTerritory = true;
+            let checked_out_street;
             for(let territory of this.territories){
-                for(let street of territory.streets){
-                    doesntHaveTerritory = this.$attrs.user ? street.checked_out_by != this.$attrs.user.user_id && this.$attrs.user.is_publisher : false;
+                if(!territory.is_letter_writing){
+                    for(let street of territory.streets){
+                        if(street.checked_out){
+                            doesntHaveTerritory = street.checked_out_by != this.user.user_id && this.user.is_publisher && street.returned_at == null
+                            if(!doesntHaveTerritory){
+                                checked_out_street = street;
+                            }
+                        }
+                    }
                 }
+                
                 if(!doesntHaveTerritory){
                     break;
                 }
@@ -58,7 +69,7 @@ export default {
         },
         checkoutStreet(territory, oldStreet, street){
             street.last_checkout = new Date();
-            street.checked_out_by = this.$attrs.user.user_id;
+            street.checked_out_by = this.user.user_id;
             this.updateStreet(territory, oldStreet, street).then(()=>{
                 this.downloadStreet(territory, street);
             })
@@ -90,6 +101,7 @@ export default {
             street.returned_at = new Date();
             street.checked_out_by = null;
             this.updateStreet(territory, oldStreet, street)
+            this.$forceUpdate();
         }
     },
     mixins: [firebaseMixin],
@@ -100,5 +112,15 @@ export default {
         })
 
     },
+    props: {
+        user: {
+            type: Object,
+            default(){
+                return {
+                    user_id: null
+                }
+            }
+        },
+    }
 }
 </script>

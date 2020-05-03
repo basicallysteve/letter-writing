@@ -22,8 +22,8 @@
                     <div v-for="(street, index) in formattedTerritory.streets" :key="index" class="street">
                         <div style="margin-right: 1em;" class="info" v-if="territory.territory_id">
                             {{street.name}} | {{street.houses}} houses 
-                            {{street.last_checkout != null ? `| Checked out at ${formatDate(street.last_checkout.toDate ? street.last_checkout.toDate() : null)} by ${street.checked_out_name}` : ""}}
-                            {{street.returned_at != null ? `| Returned at ${formatDate(street.returned_at.toDate ? street.returned_at.toDate() : null)}` : ""}}
+                            {{street.last_checkout != null ? `| ${formatDate(street.last_checkout, "Checked out")} by ${street.checked_out_name}` : ""}}
+                            {{street.returned_at != null ? `| ${formatDate(street.returned_at, "Returned")}` : ""}}
                         </div>
                         <div class="info inputs" v-else>
                             <b-input type="text" v-model="street.name" placeholder="Main Street" style="margin-right: 1em;"/>
@@ -31,11 +31,14 @@
                             <div>{{street.file ? street.file.name : null}}</div>
                         </div>
                         <div class="actions" v-if="territory.territory_id">
-                            <b-button :disabled="!$attrs.canCheckout || street.release_from_hold == false" v-if="!street.checked_out" @click="toggleCheckout(street.name, index)">Check Out</b-button>
+                            <b-button :disabled="!canCheckout || street.release_from_hold == false" v-if="!street.checked_out" @click="toggleCheckout(street.name, index)">Check Out</b-button>
                             <b-button @click="toggleCheckout(street.name, index)" v-else-if="street.checked_out_by == $attrs.userId">Return</b-button>
                             <b-button v-else disabled>Checked Out</b-button>
                             <b-dropdown v-if="($attrs.canCD ? $attrs.canCD : false )">
                                 <b-button slot="trigger" slot-scope="{ active }" :icon-left="active ? 'menu-up' : 'menu-down'">Actions</b-button>
+                                <b-dropdown-item aria-role="listitem" v-if="street.checked_out" @click="returnStreet(street.name, index)">
+                                    <label class="upload control">Return Street</label>
+                                </b-dropdown-item>
                                 <b-dropdown-item aria-role="listitem" v-if="street.returned_at != null && !street.release_from_hold" @click="releaseFromHold(street)">
                                     <label class="upload control">Release from Hold</label>
                                 </b-dropdown-item>
@@ -78,9 +81,9 @@ export default {
                     let user = street.checked_out_by ? await this.fetchUserById(street.checked_out_by) : null;
                     if(user != null){
                         street.checked_out_name = user.data().name;
-                        this.$forceUpdate()
                     }
                 }
+                this.$forceUpdate();
             })()
             
             return territory;
@@ -147,6 +150,15 @@ export default {
                 }
             }
         },
+        returnStreet(streetName, index){
+            for(let street of this.territory.streets ){
+                if(street.name == streetName){
+                    let oldStreet = JSON.parse(JSON.stringify(street));
+                    street.checked_out = false;
+                    this.$emit("returnStreet", this.territory, oldStreet, street)
+                }
+            }
+        },
         uploadStreet(event, street){
             this.saveFile(event, `territories/${this.territory.name}/${street.name}.pdf`).then(()=>{
                 street.file_uploaded = true;
@@ -156,8 +168,13 @@ export default {
                 this.$emit("updateTerritory", territory);
             });
         },
-        formatDate(date){
-            return moment(date).format("MM/DD/Y")
+        formatDate(date, text){
+            if(!date){
+                return null
+            }else if(!date.toDate){
+                return text
+            }
+            return `${text} at ${moment(date.toDate()).format("MM/DD/Y")}`;
         }
     },
     props: {
@@ -168,6 +185,18 @@ export default {
                     streets: []
                 }
             }
+        },
+        user: {
+            type: Object,
+            default(){
+                return {
+                    user_id:null
+                }
+            }
+        },
+        canCheckout: {
+            type: Boolean,
+            default: false
         }
     },
     watch:{
