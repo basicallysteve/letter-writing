@@ -18,11 +18,15 @@ export default {
             let db = firebase.firestore();
             return db.collection("/users").where("email", "==", email).get();
         },
-        async fetchUsers(){
+        async fetchUsers(queries = []){
             let users = [];
             let db = firebase.firestore();
-
-            let usersSnapshot = await db.collection("/users").get();
+            let ref = db.collection("/users");
+            for await(let item of queries){
+                console.log(item);
+                ref[item.name](...item.params)
+            }
+            let usersSnapshot = await ref.get();
             usersSnapshot.forEach(doc=>{
                 let user = doc.data();
                 user.user_id = doc.id

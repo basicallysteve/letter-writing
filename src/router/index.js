@@ -52,7 +52,23 @@ const routes = [
       requiresAuth: true
     },
     component: ()=> import("@/views/Admin.vue")
-  }
+  },
+  {
+    path: "/assignments",
+    name: "Assignments",
+    meta: {
+      requiresAuth: true
+    },
+    component: ()=> import("@/views/Assignments.vue")
+  },
+  {
+    path: "/new-assignment",
+    name: "New Assignment",
+    meta: {
+      requiresAuth: true
+    },
+    component: ()=> import("@/views/NewAssignmentForm.vue")
+  },
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
