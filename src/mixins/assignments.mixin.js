@@ -7,7 +7,6 @@ export default {
             let db = firebase.firestore();
             let ref = db.collection("/assignment-types");
             for await(let item of queries){
-                console.log(item);
                 ref[item.name](...item.params)
             }
             let assignmentTypesSnapshot = await ref.get();

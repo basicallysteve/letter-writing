@@ -23,7 +23,6 @@ export default {
             let db = firebase.firestore();
             let ref = db.collection("/users");
             for await(let item of queries){
-                console.log(item);
                 ref[item.name](...item.params)
             }
             let usersSnapshot = await ref.get();

@@ -1,5 +1,5 @@
 <template>
-    <b-autocomplete v-model="value" :data="filteredUsers" field="name" open-on-focus></b-autocomplete>
+    <b-autocomplete v-model="value" :data="filteredUsers" field="name" @select="($event)=>{$emit('select', $event)}" open-on-focus></b-autocomplete>
 </template>
 <script>
 import firebase from "../mixins/firebase.mixin";
