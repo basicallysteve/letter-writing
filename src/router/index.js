@@ -35,7 +35,7 @@ const routes = [
     meta: {
       requiresAuth: false
     },
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+    component: () => import('../views/About.vue')
   },
   {
     path: '/territories',
