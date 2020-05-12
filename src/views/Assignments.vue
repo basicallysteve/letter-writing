@@ -1,7 +1,8 @@
 <template>
     <div style="width: 75%; margin: auto;">
     <div style="display: flex; flex-flow: row; justify-content: flex-end; margin-bottom: 1em;">
-        <b-datepicker v-model="dateRange" editable placeholder="Date Range" range/>
+        <assignment-type-input v-model="assignmentTypeFilter.name"  @select="(type)=>{this.assignmentTypeFilter = type}" style="margin-right: 1em;"/>
+        <b-datepicker v-model="dateRange" editable placeholder="Date Range" style="margin-right: 1em;" range/>
         <b-button tag="router-link" to="/new-assignment" icon-right="plus">
             New Assignment
         </b-button>
@@ -24,11 +25,13 @@
     </div>
 </template>
 <script>
+import AssignmentTypeInput from "@/components/AssignmentTypeInput"
 import Card from "@/components/Card.vue"
 import assignment from "@/mixins/assignments.mixin";
 import moment from "moment";
 export default {
     components: {
+        AssignmentTypeInput,
         Card
     },
     computed: {
@@ -39,7 +42,10 @@ export default {
     data(){
         return {
             assignments: [],
-            dateRange: []
+            dateRange: [],
+            assignmentTypeFilter: {
+                name: ""
+            }
         }
     },
     methods: {
@@ -59,10 +65,18 @@ export default {
                         params: ["user_ids", "array-contains", [this.user.user_id]]
                     })
                 }
-                
+               
+            }
+
+            if(this.assignmentTypeFilter.assignment_type_id){
+                queries.push({
+                    name: "where",
+                    params: ["assignment_type_id", "==", [this.assignmentTypeFilter.assignment_type_id]]
+                })
             }
             this.fetchAssignments(queries).then(response=>{
-                this.assignments = response;
+                console.log(response)
+                this.assignments = [...response];
             })
         },
         formatDate(date){
@@ -86,6 +100,13 @@ export default {
             }
         }
     },
+    watch: {
+        'assignmentTypeFilter.assignment_type_id': {
+            handler(){
+                this.loadAssignments()
+            }
+        }
+    }
 
 }
 </script>

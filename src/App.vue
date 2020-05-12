@@ -129,4 +129,35 @@ export default {
       }
   }
 }
+
+
+
+$spaceamounts: (5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 75, 100);
+$sides: (top, bottom, left, right);
+$emamounts: (.0625,.125,.25, .5, .75, 1, 1.25, 1.5, 1.75, 2);
+@each $side in $sides {
+    @each $space in $spaceamounts {
+    .m-#{str-slice($side, 0, 1)}-#{$space} {
+      margin-#{$side}: #{$space}px;
+    }
+  
+    .p-#{str-slice($side, 0, 1)}-#{$space} {
+      padding-#{$side}: #{$space}px;
+    }
+  }
+
+  @each $space in $emamounts {
+    .m-#{16 * $space} {
+      margin: #{$space * 16}em;
+    }
+
+    .m-#{str-slice($side, 0, 1)}-#{$space * 16} {
+      margin-#{$side}: #{$space}em;
+    }
+  
+    .p-#{str-slice($side, 0, 1)}-#{$space * 16} {
+      padding-#{$side}: #{$space}em;
+    }
+  }
+}
 </style>

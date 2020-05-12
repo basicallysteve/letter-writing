@@ -57,6 +57,25 @@ export default {
         },
         deleteAssignment(assignment){
             return this.db.collection("/assignments").doc(assignment.assignment_id).delete();
+        },
+
+        userGivesAssignment(user_id, assignment_type_id){
+            let ref = this.db.collection("/user-gives-assignments").doc();
+            return ref.set({user_id, assignment_type_id});
+        },
+
+        async usersAvailableAssignmentTypes(user_id){
+            let assignmentTypes = [];
+           
+            let ref = this.db.collection("/user-gives-assignments").where("user_id", "==", user_id);
+            let assignmentsSnapShot = await ref.get();
+            assignmentsSnapShot.forEach(async (doc)=>{
+                let assignmentType = doc.data();
+                // let snap =  await this.fetchAssignmentType(assignmentType.assignment_type_id)
+                assignmentTypes.push(doc.data());
+            });
+
+            return assignmentTypes;
         }
 
     },
