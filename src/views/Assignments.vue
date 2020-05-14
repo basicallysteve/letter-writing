@@ -1,7 +1,7 @@
 <template>
     <div style="width: 75%; margin: auto;">
     <div style="display: flex; flex-flow: row; justify-content: flex-end; margin-bottom: 1em;">
-        <assignment-type-input v-model="assignmentTypeFilter.name"  @select="(type)=>{this.assignmentTypeFilter = type}" style="margin-right: 1em;"/>
+        <assignment-type-input v-model="assignmentTypeFilter.name"  @select="(type)=>{this.assignmentTypeFilter = type}" style="margin-right: 1em;" :user_id="user.user_id"/>
         <b-datepicker v-model="dateRange" editable placeholder="Date Range" style="margin-right: 1em;" range/>
         <b-button tag="router-link" to="/new-assignment" icon-right="plus">
             New Assignment
@@ -57,7 +57,12 @@ export default {
         loadAssignments(){
             let queries = [];
             if(this.hasPermission){
-
+                if(this.user.user_id){
+                    queries.push({
+                        name: "where",
+                        params: ["user_ids", "array-contains", this.user.user_id]
+                    })
+                }
             }else{
                 if(this.user.user_id){
                     queries.push({
@@ -71,11 +76,10 @@ export default {
             if(this.assignmentTypeFilter.assignment_type_id){
                 queries.push({
                     name: "where",
-                    params: ["assignment_type_id", "==", [this.assignmentTypeFilter.assignment_type_id]]
+                    params: ["assignment_type_id", "==", this.assignmentTypeFilter.assignment_type_id]
                 })
             }
             this.fetchAssignments(queries).then(response=>{
-                console.log(response)
                 this.assignments = [...response];
             })
         },

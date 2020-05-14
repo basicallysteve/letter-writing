@@ -33,7 +33,7 @@ export default {
             let queries = [
                 
             ]
-            this.types = await this.fetchAssignmentTypes(queries)
+            this.types = await this.fetchAssignmentTypes(queries, this.user_id)
         }
     },
     mixins: [assignment],
@@ -42,6 +42,10 @@ export default {
 
     },
     props: {
+        user_id: {
+            type: String,
+            default: null
+        }
     },
     watch: {
        

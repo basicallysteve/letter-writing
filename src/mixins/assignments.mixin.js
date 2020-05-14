@@ -7,18 +7,32 @@ export default {
         }
     },
     methods: {
-        async fetchAssignmentTypes(queries = []){
+        async fetchAssignmentTypes(queries = [],user_id){
             let assignmentTypes = [];
-           
+            let availableAssignmentTypes = [];
+            if(user_id){
+                availableAssignmentTypes = await this.usersAvailableAssignmentTypes(user_id);
+            }
             let ref = this.db.collection("/assignment-types");
             for await(let item of queries){
                 ref[item.name](...item.params)
             }
             let assignmentTypesSnapshot = await ref.get();
             assignmentTypesSnapshot.forEach(doc=>{
-                let type = doc.data();
-                type.assignment_type_id = doc.id
-                assignmentTypes.push(type);
+                if(availableAssignmentTypes.length > 0){
+                    for(let availableType of availableAssignmentTypes){
+                        if(doc.id == availableType.assignment_type_id){
+                            let type = doc.data();
+                            type.assignment_type_id = doc.id
+                            assignmentTypes.push(type);
+                        }
+                    }
+                }else{
+                    let type = doc.data();
+                    type.assignment_type_id = doc.id
+                    assignmentTypes.push(type);
+                }
+                
             })
             return assignmentTypes;
         },
@@ -26,23 +40,30 @@ export default {
         async fetchAssignmentType(assignment_type_id){
             return this.db.collection("/assignment-types").doc(assignment_type_id).get();
         },
-        async fetchAssignments(queries = []){
-            let assignments = [];
+        fetchAssignments(queries = []){
+            return new Promise(async (res, rej)=>{
+                let assignments = [];
            
             let ref = this.db.collection("/assignments")
             for await(let item of queries){
-                ref[item.name](...item.params);
+                ref = ref[item.name](...item.params)
             }
             let assignmentsSnapShot = await ref.get();
-            assignmentsSnapShot.forEach(async (doc)=>{
+            if(assignmentsSnapShot.size == 0){
+                res([])
+            }
+            assignmentsSnapShot.forEach(async (doc)=>{                
                 let assignment = doc.data();
                 assignment.assignment_id = doc.id;
                 let snap =  await this.fetchAssignmentType(assignment.assignment_type_id)
                 assignment.type = snap.data()
                 assignments.push(assignment);
+                if(assignments.length == assignmentsSnapShot.size){
+                    res(assignments);
+                }
             });
 
-            return assignments;
+        })
         },
 
         createAssignment(assignment){
@@ -71,12 +92,10 @@ export default {
             let assignmentsSnapShot = await ref.get();
             assignmentsSnapShot.forEach(async (doc)=>{
                 let assignmentType = doc.data();
-                // let snap =  await this.fetchAssignmentType(assignmentType.assignment_type_id)
                 assignmentTypes.push(doc.data());
             });
 
             return assignmentTypes;
         }
-
     },
 }
