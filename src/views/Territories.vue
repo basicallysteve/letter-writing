@@ -18,7 +18,7 @@
         @checkoutStreet="checkoutStreet" 
         @returnStreet="returnStreet" 
         @releaseStreet="release"
-        :canCheckout="canCheckoutTerritory" v-if="!territory.is_letter_writing"/>
+        :canCheckout="canCheckoutTerritory"/>
         </div>
         
     </div>

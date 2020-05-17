@@ -57,16 +57,42 @@ export default {
             let newTerritoryRef = db.collection("/territories").doc();
             newTerritoryRef.set(territory);
         },
-        async fetchTerritories(){
+        async fetchTerritories(queries = []){
             let db = firebase.firestore();
             let territories = []
-            let territoriesSnapshot = await db.collection("/territories").orderBy("name", "asc").get();
+
+            let ref = db.collection("/territories");
+
+            for(let query of queries){
+                ref = ref[query.name](...query.items)
+            }
+            let territoriesSnapshot = await ref.where("deleted_at", "==", null).orderBy("name", "asc").get();
             territoriesSnapshot.forEach(doc=>{
                 let territory = doc.data();
                 territory.territory_id = doc.id;
                 territories.push(territory)
             })
             return territories
+        },
+
+        async fetchTerritoryTypes(queries = []){
+            let db = firebase.firestore();
+            let types = []
+            for(let query of queries){
+                ref = ref[query.name](...query.items)
+            }
+            let ref = db.collection("/territory-types");
+            let territoryTypes = await ref.where("deleted_at", "==", null).orderBy("name", "asc").get();
+            return new Promise((res, rej)=>{
+                territoryTypes.forEach(doc=>{
+                    let type = doc.data();
+                    type.territory_type_id = doc.id;
+                    types.push(types)
+                    if(types.length == territoryTypes.size){
+                        res(types);
+                    }
+                });
+            });
         },
         updateTerritory(territory){
             let db = firebase.firestore();

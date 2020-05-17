@@ -8,6 +8,7 @@
             role="button">
             <div class="card-header-title" style="display: flex; flex-flow: row; justify-content: space-between;" >
                 {{formattedTerritory.name ? formattedTerritory.name : "New Territory"}}
+                <b-field label="Available" horizontal><b-checkbox v-model="territory.is_visible"/></b-field>
             </div>
             
             <a class="card-header-icon">
@@ -18,7 +19,7 @@
         </div>
         <div class="card-content">
             <div class="content">
-                <div >
+                <div>
                     <div v-for="(street, index) in formattedTerritory.streets" :key="index" class="street">
                         <div style="margin-right: 1em;" class="info" v-if="territory.territory_id">
                             {{street.name}} | {{street.houses}} houses 
@@ -203,6 +204,7 @@ export default {
         territory: {
             deep: true,
             handler(){
+                console.log(this.territory)
                 this.$emit("territoryUpdated", this.territory);
             }
         }
