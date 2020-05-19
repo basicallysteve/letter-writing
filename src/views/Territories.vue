@@ -6,6 +6,13 @@
         <div style="display: flex; flex-flow: row; justify-content: flex-end;  margin-right: 1em; margin-bottom: 1em;">
             <b-button size="is-small" icon-left="plus" @click="openTerritoryImportWindow" v-if="user ? user.is_territory_servant || user.is_admin : false">Add New Territory</b-button>
         </div>
+        <div style="display: flex; flex-flow: row; align-items: center; justify-content: flex-start; width: 100%;  margin-right: 1em; margin-bottom: 1em;">
+           
+            <territory-type-input @select="selectType" clearable/>
+            <b-field  v-if="user ? user.is_territory_servant || user.is_admin : false" horizontal >
+                <b-checkbox true-value="Available Territories" false-value="Unavaiable Territories" v-model="availability" style="white-space: nowrap;">View {{availability}}</b-checkbox>
+            </b-field>
+        </div>
         <div v-for="territory in territories" :key="territory.territory_id">
         <territory 
          :territory="territory" 
@@ -14,7 +21,7 @@
         @deleteTerritory="removeTerritory" 
         @updateTerritory="updateTerritory"
         :canCD="user? user.is_admin || user.is_territory_servant : false" 
-        :userId="user.user_id" 
+        :user="user" 
         @checkoutStreet="checkoutStreet" 
         @returnStreet="returnStreet" 
         @releaseStreet="release"
@@ -28,24 +35,23 @@ import firebaseMixin from "@/mixins/firebase.mixin.js";
 export default {
     components: {
         'territory': ()=>import("@/components/Territory"),
-        'territory-import': ()=>import("@/components/TerritoryImport")
+        'territory-import': ()=>import("@/components/TerritoryImport"),
+        'territory-type-input': ()=>import("@/components/TerritoryTypeInput")
     },
     computed: {
         canCheckoutTerritory(){
             let doesntHaveTerritory = true;
             let checked_out_street;
             for(let territory of this.territories){
-                if(!territory.is_letter_writing){
-                    for(let street of territory.streets){
-                        if(street.checked_out){
-                            doesntHaveTerritory = street.checked_out_by != this.user.user_id && this.user.is_publisher && street.returned_at == null
-                            if(!doesntHaveTerritory){
-                                checked_out_street = street;
-                            }
+                territory._streets = territory._streets ? territory._streets : [];
+                for(let street of territory._streets){
+                    if(street.checked_out){
+                        doesntHaveTerritory = street.checked_out_by != this.user.user_id && this.user.is_publisher && street.returned_at == null
+                        if(!doesntHaveTerritory){
+                            checked_out_street = street;
                         }
                     }
                 }
-                
                 if(!doesntHaveTerritory){
                     break;
                 }
@@ -57,11 +63,15 @@ export default {
         return {
             territories: [],
             territory_form: false,
-            territoryListener: null
+            territoryListener: null,
+            availability: "Available Territories",
+            queries: [],
         }
     },
     methods: {
         addNewTerritory(territory = {}){
+            territory.is_visible = false;
+            territory.deleted_at = null;
             this.territories.push(territory)
         },
         saveTerritory(territory){
@@ -82,8 +92,13 @@ export default {
             // this.deleteTerritory(territory_id)
         },
         loadTerritories(){
-            this.fetchTerritories().then(response=>{
-                this.territories = response;
+            let availabilityQuery = {
+                name: "where",
+                items: ["is_visible", "==", this.availability == "Available Territories" ] 
+            }
+            let queries = [availabilityQuery, ...this.queries];
+            this.fetchTerritories(queries).then(response=>{
+                this.territories = response ? response : [];
             })
         },
         release(territory, street){
@@ -100,6 +115,20 @@ export default {
             street.checked_out_by = null;
             this.updateStreet(territory, oldStreet, street)
             this.$forceUpdate();
+        },
+        selectType(type){
+            if(!type){
+                this.queries = this.queries.filter(query=>{
+                    return !query.items.includes(`type_ref`);
+                });
+            }else{
+                let type_ref = this.db.collection("territory-types").doc(type.territory_type_id);
+                this.queries.push({
+                    name: "where",
+                    items: [`type_ref`, `==`, type_ref]
+                });
+            }
+            this.loadTerritories();
         }
     },
     mixins: [firebaseMixin],
@@ -108,7 +137,6 @@ export default {
         this.territoryListener = this.onTerritoryUpdate(()=>{
             this.loadTerritories();
         })
-
     },
     props: {
         user: {
@@ -119,6 +147,11 @@ export default {
                 }
             }
         },
+    },
+    watch: {
+        availability(){
+            this.loadTerritories();
+        }
     }
 }
 </script>

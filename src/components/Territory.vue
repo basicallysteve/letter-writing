@@ -8,7 +8,6 @@
             role="button">
             <div class="card-header-title" style="display: flex; flex-flow: row; justify-content: space-between;" >
                 {{formattedTerritory.name ? formattedTerritory.name : "New Territory"}}
-                <b-field label="Available" horizontal><b-checkbox v-model="territory.is_visible"/></b-field>
             </div>
             
             <a class="card-header-icon">
@@ -20,7 +19,11 @@
         <div class="card-content">
             <div class="content">
                 <div>
-                    <div v-for="(street, index) in formattedTerritory.streets" :key="index" class="street">
+                    <div style="display: flex; flex-flow: row; justify-content: space-between;" v-if="$attrs.canCD">
+                        <territory-type-input :defaultValue="territory.type ? territory.type.name : null"  @select="selectTerritoryType" style="width: 100%"/>
+                        <b-field label="Available"  style="margin-left: 1em;" horizontal><b-checkbox v-model="territory.is_visible" /></b-field>
+                    </div>
+                    <div v-for="(street, index) in formattedTerritory._streets" :key="index" class="street">
                         <div style="margin-right: 1em;" class="info" v-if="territory.territory_id">
                             {{street.name}} | {{street.houses}} houses 
                             {{street.last_checkout != null ? `| ${formatDate(street.last_checkout, "Checked out")} by ${street.checked_out_name}` : ""}}
@@ -32,12 +35,13 @@
                             <div>{{street.file ? street.file.name : null}}</div>
                         </div>
                         <div class="actions" v-if="territory.territory_id">
-                            <b-button :disabled="!canCheckout || street.release_from_hold == false" v-if="!street.checked_out" @click="toggleCheckout(street.name, index)">Check Out</b-button>
-                            <b-button @click="toggleCheckout(street.name, index)" v-else-if="street.checked_out_by == $attrs.userId">Return</b-button>
+                            <b-button :disabled="!canCheckout || street.release_from_hold == false" v-if="!street.checked_out" @click="toggleCheckout(street)">Check Out</b-button>
                             <b-button v-else disabled>Checked Out</b-button>
+                            <b-button @click="toggleCheckout(street)" v-if="street.checked_out_by == user.user_id && street.checked_out == true">Return</b-button>
+
                             <b-dropdown v-if="($attrs.canCD ? $attrs.canCD : false )">
                                 <b-button slot="trigger" slot-scope="{ active }" :icon-left="active ? 'menu-up' : 'menu-down'">Actions</b-button>
-                                <b-dropdown-item aria-role="listitem" v-if="street.checked_out" @click="returnStreet(street.name, index)">
+                                <b-dropdown-item aria-role="listitem" v-if="street.checked_out" @click="returnStreet(street)">
                                     <label class="upload control">Return Street</label>
                                 </b-dropdown-item>
                                 <b-dropdown-item aria-role="listitem" v-if="street.returned_at != null && !street.release_from_hold" @click="releaseFromHold(street)">
@@ -47,7 +51,10 @@
                                      <b-upload v-model="street.file" accept=".pdf"  @input="uploadStreet($event, street)" :disabled="street.name == null"  v-if="$attrs.canCD">
                                          Upload Street
                                     </b-upload>
-                                     </b-dropdown-item>
+                                </b-dropdown-item>
+                                <b-dropdown-item aria-role="listitem" @click="downloadStreet(territory, street)">
+                                   <label class="upload control" > Preview Upload</label>
+                                </b-dropdown-item>
                             </b-dropdown>
                         </div>
                         <div class="actions" v-else>
@@ -62,7 +69,7 @@
                         <hr />
                     </div>
                     <b-button type="is-primary" icon-left="plus"  @click="addStreet" v-if="$attrs.canCD && territory.territory_id == null" style="margin-right: 1em;">Add Street</b-button>
-                    <b-button type="is-success" icon-left="floppy" @click="saveTerritory" v-if="$attrs.canCD && territory.territory_id == null" style="margin-right: 1em;" :disabled="territory.streets.length == 0">Save Territory</b-button>
+                    <b-button type="is-success" icon-left="floppy" @click="saveTerritory" v-if="$attrs.canCD && territory.territory_id == null" style="margin-right: 1em;" :disabled="territory._streets.length == 0">Save Territory</b-button>
                     <b-button type="is-danger" icon-left="delete" @click="deleteTerritory"  v-if="$attrs.canCD && territory.territory_id == null" disabled style="margin-right: 1em;">Delete Territory</b-button>
                     
                 </div>
@@ -73,15 +80,27 @@
 <script>
 import moment from "moment";
 import firebaseMixin from "@/mixins/firebase.mixin";
+import TerritoryTypeInput from "@/components/TerritoryTypeInput";
 export default {
+    components: {
+        TerritoryTypeInput
+    },
     computed: {
         formattedTerritory(){
             let territory = this.territory;
             (async ()=>{
-                for await(let street of this.territory.streets){
+                this.territory._streets = this.territory._streets ? this.territory._streets : [];
+                for await(let street of this.territory._streets){
                     let user = street.checked_out_by ? await this.fetchUserById(street.checked_out_by) : null;
-                    if(user != null){
-                        street.checked_out_name = user.data().name;
+                    if(user != null ){
+                        let userData = await user.data();
+                        if(userData == undefined){
+                            street.checked_out_by = null;
+                            street.checked_out_name = null;
+                            street.checked_out = false;
+                        }else{
+                            street.checked_out_name = userData.name;
+                        }
                     }
                 }
                 this.$forceUpdate();
@@ -97,7 +116,7 @@ export default {
     },
     methods: {
         addStreet(){
-            this.territory.streets.push({
+            this.territory._streets.push({
                 name: null,
                 houses: 0,
                 checked_out: false,
@@ -109,8 +128,14 @@ export default {
                 pdf_format: true
             })
         },
+        selectTerritoryType(type){
+            let territory = Object.assign(this.territory);
+            delete territory.type;
+            territory.type_ref = this.db.collection("/territory-types").doc(type.territory_type_id);
+            this.db.collection("/territories").doc(territory.territory_id).update(territory);
+        },
         saveTerritory(){
-            for(let street of this.territory.streets){
+            for(let street of this.territory._streets){
                 delete street.html;
                 delete street.file;
             }
@@ -118,17 +143,17 @@ export default {
         },
         deleteStreet(index){
             let streets = [];
-            for(let i = 0; i < this.territory.streets.length; i++){
+            for(let i = 0; i < this.territory._streets.length; i++){
                 if(i != index){
-                    streets.push(this.territory.streets[i]);
+                    streets.push(this.territory._streets[i]);
                 }
             }
-            this.deleteFile(`territories/${this.territory.name}/${this.territory.streets[index].name}.pdf`).then(response=>{
+            this.deleteFile(`territories/${this.territory.name}/${this.territory._streets[index].name}.pdf`).then(response=>{
             }).catch(err=>{
 
             })
 
-            this.territory.streets = streets;
+            this.territory._streets = streets;
         },
         deleteTerritory(){
             this.$emit("deleteTerritory", this.territory.territory_id);
@@ -137,28 +162,25 @@ export default {
             street.release_from_hold = true;
             this.$emit("releaseStreet", this.territory, street);
         },
-        toggleCheckout(streetName, index){
-            for(let street of this.territory.streets ){
-                if(street.name == streetName){
-                    let oldStreet = JSON.parse(JSON.stringify(street));
-                    street.checked_out = !street.checked_out;
-                    if(street.checked_out){
-                        street.release_from_hold = false;
-                        this.$emit("checkoutStreet", this.territory, oldStreet, street);
-                    }else{
-                        this.$emit("returnStreet", this.territory, oldStreet, street)
-                    }
-                }
+        toggleCheckout(street){
+            // for(let street of this.territory._streets ){
+            //     if(street.name == streetName){
+            let oldStreet = JSON.parse(JSON.stringify(street));
+            street.checked_out = !street.checked_out;
+            if(street.checked_out){
+                street.release_from_hold = false;
+                this.$emit("checkoutStreet", this.territory, oldStreet, street);
+            }else{
+                street.checked_out_name = null;
+                this.$emit("returnStreet", this.territory, oldStreet, street)
             }
+                // }
+            // }
         },
-        returnStreet(streetName, index){
-            for(let street of this.territory.streets ){
-                if(street.name == streetName){
-                    let oldStreet = JSON.parse(JSON.stringify(street));
-                    street.checked_out = false;
-                    this.$emit("returnStreet", this.territory, oldStreet, street)
-                }
-            }
+        returnStreet(street){
+            let oldStreet = JSON.parse(JSON.stringify(street));
+            street.checked_out = false;
+            this.$emit("returnStreet", this.territory, oldStreet, street)
         },
         uploadStreet(event, street){
             this.saveFile(event, `territories/${this.territory.name}/${street.name}.pdf`).then(()=>{
@@ -191,7 +213,7 @@ export default {
             type: Object,
             default(){
                 return {
-                    user_id:null
+                    user_id: null
                 }
             }
         },
@@ -201,15 +223,18 @@ export default {
         }
     },
     watch:{
-        territory: {
-            deep: true,
-            handler(){
-                console.log(this.territory)
-                this.$emit("territoryUpdated", this.territory);
-            }
-        }
+       'territory.is_visible': {
+           handler(){
+               let territory = Object.assign(this.territory);
+               delete territory.type;
+                this.db.collection("/territories").doc(territory.territory_id).update(territory);
+           }
+       }
     },
-    mixins: [firebaseMixin]
+    mixins: [firebaseMixin],
+    mounted(){
+        
+    }
 }
 </script>
 

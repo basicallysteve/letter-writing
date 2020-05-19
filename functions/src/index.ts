@@ -8,7 +8,7 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     apiKey: "AIzaSyAFHTI9Sc-DjGHz2oo-w5Cvw30bXeSMgxI",
     authDomain: "localhost",
-    databaseUrl: "",
+    databaseUrl: "https://servantlite.firebaseio.com/",
     projectId: "letter-writing-app",
     storageBucket: "gs://letter-writing-app.appspot.com",
     messageSenderId: ""
@@ -22,7 +22,7 @@ admin.initializeApp({
 // });
 
 
-export const deleteUser = functions.https.onCall((userId: string)=>{
+exports.deleteUser = functions.https.onCall((userId: string)=>{
     try{
         let db = admin.firestore();
         db.collection("/users").doc(userId).delete();
@@ -86,8 +86,8 @@ exports.returnedTerritory = functions.firestore
                                      .onUpdate(async (change: any, context: Object)=>{
                                         const oldTerritory = change.before.data() 
                                         const newterritory = change.after.data();
-                                        for(let street of newterritory.streets){
-                                            let oldStreet = oldTerritory.streets.find((old:any)=>{
+                                        for(let street of newterritory._streets){
+                                            let oldStreet = oldTerritory._streets.find((old:any)=>{
                                                 return old.name == street.name;
                                             })
                                             if(street.returned_at != oldStreet.returned_at && street.returned_at != null){
@@ -109,3 +109,13 @@ exports.returnedTerritory = functions.firestore
                                         }
                                        
                                      })
+
+exports.setUpDB = functions.https.onCall(()=>{
+    admin.database().ref("/").set({
+        territories: {},
+        streets: {},
+        users: {},
+        congregations: {},
+    })
+})
+
