@@ -2,14 +2,18 @@ import firebase from "firebase";
 const fb = require('@/firebaseConfig.js')
 
 export default {
+    data(){
+        return {
+        }  
+    },
     methods: {
         async addUser(user){
             let db = firebase.firestore();
 
             let congregationSnapshot = await db.collection("/congregation").where("name", "==", "North Coram").get();
             congregationSnapshot.forEach(doc=>{
-                console.log(doc.data())
                 user.congregation_id = doc.id;
+                user.email = user.email.toLowerCase();
                 db.collection("/users").doc().set(user);
             });
         },
@@ -57,16 +61,54 @@ export default {
             let newTerritoryRef = db.collection("/territories").doc();
             newTerritoryRef.set(territory);
         },
-        async fetchTerritories(){
-            let db = firebase.firestore();
+        async fetchTerritories(queries = []){
             let territories = []
-            let territoriesSnapshot = await db.collection("/territories").orderBy("name", "asc").get();
-            territoriesSnapshot.forEach(doc=>{
-                let territory = doc.data();
-                territory.territory_id = doc.id;
-                territories.push(territory)
+
+            let ref = this.db.collection("/territories");
+
+            for(let query of queries){
+                ref = ref[query.name](...query.items)
+            }
+            let territoriesSnapshot = await ref.where("deleted_at", "==", null).orderBy("name", "asc").get();
+            return new Promise(async (res,rej)=>{
+                    if(territoriesSnapshot.size == 0){
+                        res([]);
+                    }
+                    territoriesSnapshot.forEach(async (doc)=>{
+                    let territory = doc.data();
+                    territory.territory_id = doc.id;
+                    if(territory.type_ref){
+                    let type = await territory.type_ref.get();
+                    territory.type = type.data();
+                    }else{
+                        territory.type = {}
+                    }
+                    territories.push(territory)
+                    if(territories.length == territoriesSnapshot.size){
+                        res(territories)
+                    }
+                })
             })
-            return territories
+        },
+
+        async fetchTerritoryTypes(queries = []){
+            let db = firebase.firestore();
+            let types = []
+            for(let query of queries){
+                ref = ref[query.name](...query.items)
+            }
+            let ref = db.collection("/territory-types");
+            let territoryTypes = await ref.where("deleted_at", "==", null).orderBy("name", "asc").get();
+            return new Promise((res, rej)=>{
+                territoryTypes.forEach(doc=>{
+                    let type = doc.data();
+                    type.territory_type_id = doc.id;
+                    types.push(type)
+                    if(types.length == territoryTypes.size){
+                        res(types);
+                    }
+                });
+            });
         },
         updateTerritory(territory){
             let db = firebase.firestore();
@@ -75,12 +117,12 @@ export default {
 
         updateStreet(territory, oldStreet, street){
             let db = firebase.firestore();
-            let streets = territory.streets.filter(territoryStreet=>{
+            let streets = territory._streets.filter(territoryStreet=>{
                 return street.name != territoryStreet.name
             })
             streets.push(street);
             return db.collection("/territories").doc(territory.territory_id).update({
-                streets,
+                _streets: streets
             })
         },
         deleteTerritory(territory_id){
@@ -101,6 +143,7 @@ export default {
                 let downloadFile = street.pdf_format ? `${street.name}.pdf` : `${street.name}.xlsx`
                 a.setAttribute("download", downloadFile);
                 a.setAttribute("href", url);
+                a.setAttribute("target", "_blank");
                 a.style.display = 'none';
                 document.body.appendChild(a);
                 a.click();
@@ -115,20 +158,20 @@ export default {
         },
 
         async fetchStreets(user_id){
-            let db = firebase.firestore();
             let streets = []
-            let territoriesSnapshot = await db.collection("/territories").get();
-            territoriesSnapshot.forEach(doc=>{
-                let territory = doc.data();
-                territory.territory_id = doc.id;
-                territory.streets.forEach(street=>{
-                    if(street.checked_out_by == user_id && street.checked_out){
-                        street.territory = territory;
-                        streets.push(street);
-                    }
-                })
-            })
-            return streets;
+            let territories = await this.fetchTerritories();
+            for(let territory of territories){
+                if(territory._streets != null){
+                    territory._streets.forEach(street=>{
+                        if(street.checked_out_by == user_id && street.checked_out){
+                            street.territory = territory;
+                            streets.push(street);
+                        }
+                    })
+                }                
+            }
+           return streets;
+            
         },
         saveFile(file, path){
             let storageBucket = firebase.storage().ref()

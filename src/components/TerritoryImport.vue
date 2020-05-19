@@ -73,7 +73,7 @@ export default {
             this.isLoading = true;
             for await(let file of this.territory.streetFiles){
                 this.readStreet(file).then(street=>{
-                    this.territory.streets.push(street);
+                    this.territory._streets.push(street);
                     // let el = document.createElement("div");
                     // el.innerHTML = street.html.trim();
                     // el.setAttribute("style", "z-index: -1");

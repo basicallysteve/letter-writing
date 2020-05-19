@@ -32,6 +32,7 @@
     "@vue/test-utils": "1.0.0-beta.31",
     "chai": "^4.1.2",
     "firebase-admin": "^8.10.0",
+    "firebase-functions": "^3.6.1",
     "lodash": "^4.17.15",
     "node-sass": "^4.12.0",
     "prince": "^1.8.0",
