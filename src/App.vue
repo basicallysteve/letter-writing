@@ -12,7 +12,7 @@
           <router-link to="territories">Territories</router-link>
         </b-navbar-item>
         <b-navbar-item>
-          <router-link to="admin" v-if="profile ? profile.is_admin : false">Admin</router-link>
+          <router-link to="admin" v-if="user">Admin</router-link>
         </b-navbar-item>
       </template>
       <template #end>
@@ -36,7 +36,7 @@
         
       </div>
     </div>
-    <router-view @userChange="changeUser" :user="profile"/>
+    <router-view @userChange="changeUser" :user="user"/>
     <div><footing /></div>
   </div>
 </template>
@@ -45,6 +45,7 @@ import firebase from "firebase";
 import Footer from "./components/Footer";
 const fb = require('./firebaseConfig.js')
 import firebaseMixin from "@/mixins/firebase.mixin.js";
+import classes from "./classes/index";
 export default {
   components: {
     'footing': Footer
@@ -54,7 +55,8 @@ export default {
       currentUser: null,
       profile: {
         is_publisher: false
-      }
+      },
+      user: {}
     }
   },
 
@@ -81,7 +83,9 @@ export default {
     if(this.currentUser){
       this.fetchUser(this.currentUser.email).then(querySnap=>{
           querySnap.forEach(doc=>{
-              this.profile = {...doc.data(), user_id: doc.id};
+              let user = new classes.User()
+              user.getByEmail(this.currentUser.email);
+              this.user = user;
           })
       });
     }

@@ -8,7 +8,7 @@ export default class House extends FirebaseDoc {
     ref: string;
     rv_ref: any;
     comments: Array<UserComment>
-    constructor(props){
+    constructor(props: any){
         super({...props, collection: `${props.collection}/houses`});
         this.contact = props.contact;
         this.last_contact = props.last_contact;

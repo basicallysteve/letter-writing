@@ -1,23 +1,23 @@
 import SoftDelete from "./SoftDelete";
 import {firestore} from "firebase"
-export default class FirebaseDoc implements SoftDelete {
+import Model from './Model';
+export default abstract class FirebaseDoc implements SoftDelete, Model {
     deleted_at: Date;
-    reference: firestore.DocumentReference;
+    reference: firestore.DocumentReference | null;
     collection: string;
-    constructor(props){
+    constructor(props: any){
         this.deleted_at = props.deleted_at;
         this.collection = props.collection
+        this.reference = null;
        (async()=>{
             this.reference = props.reference ? props.reference : props.ref ? await firestore().collection(this.collection).doc(props.ref) : null;
         })()
     }
     get fields(){
-        return [...this.requiredFields, "deleted_at"]
+        return ["deleted_at"]
     }
-    get requiredFields(){
-        return []
-    }
-    set firebaseDoc(value){
+
+    set firebaseDoc(value: object){
         for(let field of this.fields){
             this[field] = value[field];
         }
@@ -26,19 +26,29 @@ export default class FirebaseDoc implements SoftDelete {
     get valid(){
         return true
     }
-    get firebaseDoc(){
+    get firebaseDoc(): object{
         if(this.valid){
             return {
                 deleted_at: this.deleted_at
             }
         }
+        throw new Error("Firebase Document missing required fields");
     }
     create() {
         this.reference = firestore().collection(this.collection).doc();
     }
-    async get(): Promise<Object>{
-        let document = await this.reference.get();
-        this.firebaseDoc = {deleted_at: null, ...document.data()};
+    async get(data: object | null): Promise<object>{
+        if(data){
+            this.firebaseDoc = {deleted_at: null, ...data}
+        }
+        else if(this.reference){
+            let document = await this.reference.get();
+            this.firebaseDoc = {deleted_at: null, ...document.data()};
+        }else{
+            this.create();
+            this.get(null);
+        }
+        
         return this.firebaseDoc;
     }
 
