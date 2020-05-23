@@ -46,6 +46,7 @@ import Footer from "./components/Footer";
 const fb = require('./firebaseConfig.js')
 import firebaseMixin from "@/mixins/firebase.mixin.js";
 import classes from "./classes/index";
+
 export default {
   components: {
     'footing': Footer
@@ -81,13 +82,19 @@ export default {
   mounted(){
     this.currentUser = firebase.auth().currentUser
     if(this.currentUser){
+
+      let territory = new classes.Territory();
+      territory.getByName("Test");
+      
       this.fetchUser(this.currentUser.email).then(querySnap=>{
           querySnap.forEach(doc=>{
               let user = new classes.User()
               user.getByEmail(this.currentUser.email);
               this.user = user;
           })
-      });
+      }).finally(()=>{
+        territory.addStreet("Main Street");
+      })
     }
   },
 

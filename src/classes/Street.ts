@@ -1,21 +1,16 @@
 import FirebaseDoc from "./FirebaseDoc";
 import House from "./House";
+import FireabaseCollection from "./FirebaseCollection";
+import FirebaseCollection from './FirebaseCollection';
 export default class Street extends FirebaseDoc {
-    houses: Array<House>;
+    // houses: FirebaseCollection<House>;
     name: String;
     ref: String;
-    constructor(props){
-        super(props);
+    constructor(props:any){
+        super({...props, collection: `${props.parentDocument}/streets`});
         this.ref = props.ref;
         this.name = props.name;
-        this.houses = new Array<House>();
-        for(let house of props.houses){
-            try{
-                this.houses.push(new House(house));
-            }catch(err){
-                console.error(err);
-            }
-        }
+        // this.houses = new FirebaseCollection<House>(`${this.ref}/houses`);
     }
     get requiredFields(){
         return []
@@ -24,41 +19,26 @@ export default class Street extends FirebaseDoc {
         return true;
     }
     get firebaseDoc(){
-        if(this.valid && this.houses.length > 0){
+        if(this.valid){
             return {
-                deleted_at: this.deleted_at
+                name: this.name,
             }
         }
-        else if(this.houses.length == 0){
-            throw new StreetError(`Street missing houses`);
-        }else{
-
-        }
+        throw new StreetError(`Street missing houses`);
     }
-    get houseCollection(){
-        let houses = [];
-        for(let house of this.houses){
-            houses.push(house.firebaseDoc)
-        };
-        return {
-            collectionName: `${this.ref}/houses`,
-            houses
-        }
-    };
-
+    create(){
+        super.create(this.firebaseDoc)
+    }
     addNewHouse(house: House){
-        if(house.valid){
-            this.houses.push(house)
-        }
+        // if(house.valid){
+        //     this.houses.push(house)
+        // }
     }
 
-    delete(){
-        this.deleted_at = new Date();
-    }
 }
 
 class StreetError extends Error{
-    constructor(message){
+    constructor(message: string){
         super(`Street Error: ${message}`);
     }
 }

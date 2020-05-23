@@ -16,7 +16,7 @@ Vue.mixin({
     }
   }
 })
-fb.auth.onAuthStateChanged(user => {
+fb.auth.onAuthStateChanged((user: any) => {
   new Vue({
     router,
     render: h => h(App)

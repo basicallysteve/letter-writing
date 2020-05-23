@@ -2,7 +2,7 @@ import SoftDelete from "./SoftDelete";
 import {firestore} from "firebase"
 import Model from './Model';
 export default abstract class FirebaseDoc implements SoftDelete, Model {
-    deleted_at: Date;
+    deleted_at: Date | null = null;
     reference: firestore.DocumentReference | null;
     collection: string;
     constructor(props: any){
@@ -34,8 +34,10 @@ export default abstract class FirebaseDoc implements SoftDelete, Model {
         }
         throw new Error("Firebase Document missing required fields");
     }
-    create() {
+    public create(doc = this.firebaseDoc) {
         this.reference = firestore().collection(this.collection).doc();
+        console.log({...doc, ...this.firebaseDoc});
+        this.reference.set(doc);
     }
     async get(data: object | null): Promise<object>{
         if(data){
@@ -52,8 +54,8 @@ export default abstract class FirebaseDoc implements SoftDelete, Model {
         return this.firebaseDoc;
     }
 
-    update(){
-        this.reference.update(this.firebaseDoc);
+    update(doc = this.firebaseDoc){
+        this.reference.update(doc);
     }
 
     delete(): void{
