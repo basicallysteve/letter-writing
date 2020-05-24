@@ -45,6 +45,7 @@ import firebase from "firebase";
 import Footer from "./components/Footer";
 const fb = require('./firebaseConfig.js')
 import firebaseMixin from "@/mixins/firebase.mixin.js";
+import EventBus from "./event-bus";
 export default {
   components: {
     'footing': Footer
@@ -78,6 +79,12 @@ export default {
   mixins: [firebaseMixin],
   mounted(){
     this.currentUser = firebase.auth().currentUser
+    EventBus.$on("updateFound", ()=>{
+      this.$buefy.toast.open({
+        message: "There's been an update! Reload your app to receive the latest changes!",
+        duration: 5000,
+      });
+    })
     if(this.currentUser){
       this.fetchUser(this.currentUser.email).then(querySnap=>{
           querySnap.forEach(doc=>{

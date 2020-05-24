@@ -143,7 +143,10 @@ export default {
                 let downloadFile = street.pdf_format ? `${street.name}.pdf` : `${street.name}.xlsx`
                 a.setAttribute("download", downloadFile);
                 a.setAttribute("href", url);
-                a.setAttribute("target", "_blank");
+                let isSafari = /constructor/i.test(window.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || (typeof safari !== 'undefined' && safari.pushNotification));
+                if(!isSafari){
+                    a.setAttribute("target", "_blank");
+                }
                 a.style.display = 'none';
                 document.body.appendChild(a);
                 a.click();
