@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "letter-writing-app"
+    "default": "letter-writing-app",
+    "staging": "servantlitedev"
   }
 }
