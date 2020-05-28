@@ -141,12 +141,14 @@ export default {
             territories.child(bucket).getDownloadURL().then(url=>{
                 let a = document.createElement("a");
                 let downloadFile = street.pdf_format ? `${street.name}.pdf` : `${street.name}.xlsx`
-                a.setAttribute("download", downloadFile);
-                a.setAttribute("href", url);
-                a.setAttribute("target", "_blank");
+                
+                a.download = downloadFile;
+                a.href = url;               
                 a.style.display = 'none';
                 document.body.appendChild(a);
                 a.click();
+                
+               
                 document.body.removeChild(a);
             }).catch(err=>{
                console.log(err);

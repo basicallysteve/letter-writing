@@ -1,13 +1,13 @@
 import firebase from "firebase";
 import "firebase/firestore";
-
+import dotenv from "dotenv";
 const config = {
-    apiKey: "AIzaSyBKxjYmLeNTMvriNC10WwMQTYkKj7KJ0AQ",
-    authDomain: "localhost",
-    databaseUrl: "",
-    projectId: "letter-writing-app",
-    storageBucket: "gs://letter-writing-app.appspot.com",
-    messageSenderId: ""
+    apiKey: process.env.VUE_APP_API_KEY,
+    authDomain: process.env.VUE_APP_AUTH_DOMAIN,
+    databaseUrl: process.env.VUE_APP_DB_URL,
+    projectId: process.env.VUE_APP_PROJECT_ID,
+    storageBucket: process.env.VUE_APP_STORAGE_BUCKET,
+    messageSenderId: process.env.VUE_APP_MESSAGE_SENDER_ID
 }
 firebase.initializeApp(config)
 

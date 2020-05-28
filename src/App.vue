@@ -46,6 +46,7 @@ import Footer from "./components/Footer";
 const fb = require('./firebaseConfig.js')
 import firebaseMixin from "@/mixins/firebase.mixin.js";
 import classes from "./classes/index";
+import EventBus from "./event-bus";
 
 export default {
   components: {
@@ -81,6 +82,12 @@ export default {
   mixins: [firebaseMixin],
   mounted(){
     this.currentUser = firebase.auth().currentUser
+    EventBus.$on("updateFound", ()=>{
+      this.$buefy.toast.open({
+        message: "There's been an update! Reload your app to receive the latest changes!",
+        duration: 5000,
+      });
+    })
     if(this.currentUser){
 
       let territory = new classes.Territory();
