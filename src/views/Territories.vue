@@ -4,7 +4,8 @@
             <territory-import @newTerritory="addNewTerritory" />
         </b-modal>
         <div style="display: flex; flex-flow: row; justify-content: flex-end;  margin-right: 1em; margin-bottom: 1em;">
-            <b-button size="is-small" icon-left="plus" @click="openTerritoryImportWindow" v-if="user ? user.is_territory_servant || user.is_admin : false">Add New Territory</b-button>
+            <b-button size="is-small" icon-left="plus" @click="createNewTerritory" v-if="user ? user.is_territory_servant || user.is_admin : false">Add Territory</b-button>
+            <b-button size="is-small" icon-left="plus" @click="openTerritoryImportWindow" v-if="user ? user.is_territory_servant || user.is_admin : false">Import Territory</b-button>
         </div>
         <div style="display: flex; flex-flow: row; align-items: center; justify-content: flex-start; width: 100%;  margin-right: 1em; margin-bottom: 1em;">
            
@@ -15,23 +16,25 @@
         </div>
         <div v-for="territory in territories" :key="territory.territory_id">
         <territory 
-         :territory="territory" 
-  
-        @saveTerritory="saveTerritory"
-        @deleteTerritory="removeTerritory" 
-        @updateTerritory="updateTerritory"
-        :canCD="user? user.is_admin || user.is_territory_servant : false" 
-        :user="user" 
-        @checkoutStreet="checkoutStreet" 
-        @returnStreet="returnStreet" 
-        @releaseStreet="release"
-        :canCheckout="canCheckoutTerritory"/>
+            :territory="territory" 
+            @saveTerritory="saveTerritory"
+            @deleteTerritory="removeTerritory" 
+            @updateTerritory="updateTerritory"
+            :canCD="user? user.is_admin || user.is_territory_servant : false" 
+            :user="user" 
+            @checkoutStreet="checkoutStreet" 
+            @returnStreet="returnStreet" 
+            @releaseStreet="release"
+            :canCheckout="canCheckoutTerritory"
+        />
         </div>
         
     </div>
 </template>
 <script>
 import firebaseMixin from "@/mixins/firebase.mixin.js";
+import classes from "@/classes/index";
+var {User, Territory} = classes;
 export default {
     components: {
         'territory': ()=>import("@/components/Territory"),
@@ -74,6 +77,12 @@ export default {
             territory.deleted_at = null;
             this.territories.push(territory)
         },
+        createNewTerritory(){
+           let territory = {};
+           territory.is_visible = false;
+           territory.deleted_at = null;
+           this.territories.push(new Territory(territory))
+        },
         saveTerritory(territory){
             this.createTerritory(territory);
         },
@@ -98,7 +107,11 @@ export default {
             }
             let queries = [availabilityQuery, ...this.queries];
             this.fetchTerritories(queries).then(response=>{
-                this.territories = response ? response : [];
+                this.territories = [];
+                for(let territory of response){
+                    this.territories.push(new Territory(territory));
+                }
+                
             })
         },
         release(territory, street){

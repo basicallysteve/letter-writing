@@ -1,5 +1,4 @@
 <template>
-
     <b-collapse class="card" animation="slide" style="margin-bottom: 1em;" :open="false">
         <div
             slot="trigger" 
@@ -19,12 +18,15 @@
         <div class="card-content">
             <div class="content">
                 <div>
+                    <div style="display: flex; flex-flow: row; justify-content: space-between;">
+                        <b-input v-if="territory.territory_id == null" v-model="territory.name"/>
+                    </div>
                     <div style="display: flex; flex-flow: row; justify-content: space-between;" v-if="$attrs.canCD">
                         <territory-type-input :defaultValue="territory.type ? territory.type.name : null"  @select="selectTerritoryType" style="width: 100%"/>
                         <b-field label="Available"  style="margin-left: 1em;" horizontal><b-checkbox v-model="territory.is_visible" /></b-field>
                     </div>
                     <div v-for="(street, index) in formattedTerritory._streets" :key="index" class="street">
-                        <div style="margin-right: 1em;" class="info" v-if="territory.territory_id">
+                        <div style="margin-right: 1em;" class="info" v-if="street.street_id">
                             {{street.name}} | {{street.houses}} houses 
                             {{street.last_checkout != null ? `| ${formatDate(street.last_checkout, "Checked out")} by ${street.checked_out_name}` : ""}}
                             {{street.returned_at != null ? `| ${formatDate(street.returned_at, "Returned")}` : ""}}
@@ -68,9 +70,9 @@
                         </div>
                         <hr />
                     </div>
-                    <b-button type="is-primary" icon-left="plus"  @click="addStreet" v-if="$attrs.canCD && territory.territory_id == null" style="margin-right: 1em;">Add Street</b-button>
-                    <b-button type="is-success" icon-left="floppy" @click="saveTerritory" v-if="$attrs.canCD && territory.territory_id == null" style="margin-right: 1em;" :disabled="territory._streets.length == 0">Save Territory</b-button>
-                    <b-button type="is-danger" icon-left="delete" @click="deleteTerritory"  v-if="$attrs.canCD && territory.territory_id == null" disabled style="margin-right: 1em;">Delete Territory</b-button>
+                    <b-button type="is-primary" icon-left="plus"  @click="addStreet" v-if="$attrs.canCD" style="margin-right: 1em;">Add Street</b-button>
+                    <b-button type="is-success" icon-left="floppy" @click="saveTerritory" v-if="$attrs.canCD && territory.territory_id == null" style="margin-right: 1em;">Save Territory</b-button>
+                    <b-button type="is-danger" icon-left="delete" @click="deleteTerritory"  v-if="$attrs.canCD" style="margin-right: 1em;">Delete Territory</b-button>
                     
                 </div>
             </div>
@@ -129,17 +131,23 @@ export default {
             })
         },
         selectTerritoryType(type){
-            let territory = Object.assign(this.territory);
-            delete territory.type;
-            territory.type_ref = this.db.collection("/territory-types").doc(type.territory_type_id);
-            this.db.collection("/territories").doc(territory.territory_id).update(territory);
+            this.territory.type_ref = this.db.collection("/territory-types").doc(type.territory_type_id);
+            if(this.territory.territory_id){
+                this.territory.update();
+            }
         },
         saveTerritory(){
-            for(let street of this.territory._streets){
-                delete street.html;
-                delete street.file;
+            if(!this.territory.territory_id){
+                this.territory.create();
+            }else{
+
             }
-            this.$emit("saveTerritory", this.territory)
+
+            // for(let street of this.territory._streets){
+            //     delete street.html;
+            //     delete street.file;
+            // }
+            // this.$emit("saveTerritory", this.territory)
         },
         deleteStreet(index){
             let streets = [];
@@ -156,7 +164,7 @@ export default {
             this.territory._streets = streets;
         },
         deleteTerritory(){
-            this.$emit("deleteTerritory", this.territory.territory_id);
+            this.territory.delete();
         },
         releaseFromHold(street){
             street.release_from_hold = true;
@@ -205,7 +213,6 @@ export default {
             type: Object,
             default(){
                 return {
-                    streets: []
                 }
             }
         },

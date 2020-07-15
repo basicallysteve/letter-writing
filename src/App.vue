@@ -9,7 +9,7 @@
           <router-link to="about">About</router-link>
         </b-navbar-item>
         <b-navbar-item>
-          <router-link to="territories">Territories</router-link>
+          <router-link to="territory-search">Territories</router-link>
         </b-navbar-item>
         <b-navbar-item>
           <router-link to="admin" v-if="user">Admin</router-link>
@@ -26,16 +26,6 @@
         </b-navbar-item>
       </template>
     </b-navbar>
-    <div id="nav">
-      <div>
-  
-      
-      </div>
-      <div style="display: flex; flex-flow: row">
-       
-        
-      </div>
-    </div>
     <router-view @userChange="changeUser" :user="user"/>
     <div><footing /></div>
   </div>
@@ -45,9 +35,9 @@ import firebase from "firebase";
 import Footer from "./components/Footer";
 const fb = require('./firebaseConfig.js')
 import firebaseMixin from "@/mixins/firebase.mixin.js";
-import classes from "./classes/index";
 import EventBus from "./event-bus";
-
+import classes from "./classes/index";
+var {User, Territory} = classes;
 export default {
   components: {
     'footing': Footer
@@ -89,18 +79,14 @@ export default {
       });
     })
     if(this.currentUser){
-
-      let territory = new classes.Territory();
-      territory.getByName("Test");
       
       this.fetchUser(this.currentUser.email).then(querySnap=>{
           querySnap.forEach(doc=>{
-              let user = new classes.User()
+              let user = new User()
               user.getByEmail(this.currentUser.email);
               this.user = user;
           })
       }).finally(()=>{
-        territory.addStreet("Main Street");
       })
     }
   },
@@ -143,5 +129,10 @@ export default {
           margin-top: .5em;
       }
   }
+}
+
+.flex-row{
+  display: flex;
+   flex-flow: row;
 }
 </style>

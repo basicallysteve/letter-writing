@@ -7,6 +7,7 @@ import 'buefy/dist/buefy.css'
 const fb = require('./firebaseConfig.js')
 import firebase from "firebase";
 
+
 Vue.config.productionTip = false
 Vue.use(buefy);
 Vue.mixin({
@@ -14,6 +15,9 @@ Vue.mixin({
     return {
       db: firebase.firestore()
     }
+  },
+  props: {
+    
   }
 })
 fb.auth.onAuthStateChanged((user: any) => {

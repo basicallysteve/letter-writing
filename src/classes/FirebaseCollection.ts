@@ -1,4 +1,4 @@
-import {firestore} from "firestore";
+import {firestore} from "firebase";
 import Query from "./Query";
 export default class FirebaseCollection<T> {
     collection: firestore.CollectionReference

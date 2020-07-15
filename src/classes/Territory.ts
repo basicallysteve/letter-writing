@@ -9,15 +9,14 @@ export default class Territory extends FirebaseDoc {
     congregation_id: string;
     _streets: Array<object> = [];
     streets: any;
+    streets: firestore.CollectionReference;
     constructor(props: object = {}){
-        super({...props, collection: `/territories`})
+        super({...props, collection: `/territories`, ref: props.territory_id})
         this.name = props.name;
         this.is_visible = props.is_visible;
         this.territory_id = props.territory_id;
         this.type_ref = props.type_ref;
         this.congregation_id = props.congregation_id;
-        this._streets = props._streets;
-        this.streets = props.streets;
     }
 
 
@@ -25,7 +24,7 @@ export default class Territory extends FirebaseDoc {
         return [...this.requiredFields, "streets", "deleted_at", "type_ref", "territory_id" ]
     }
     get requiredFields(): Array<string>{
-        return ["is_visible", "name", "congregation_id", "_streets"];
+        return ["is_visible", "name", "congregation_id"];
     }
 
     set firebaseDoc(newVal: object){
