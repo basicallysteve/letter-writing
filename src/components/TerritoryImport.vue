@@ -63,7 +63,7 @@ export default {
             isLoading: false,
             territory: {
                 name: null,
-                streets: [],
+                _streets: [],
                 streetFiles: []
             }
         }
