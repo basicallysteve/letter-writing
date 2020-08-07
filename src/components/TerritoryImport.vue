@@ -14,7 +14,7 @@
                     </b-input>
                 </b-field>
 
-                <b-field>
+                <b-field style="display: flex; flex-flow: column">
                     <template #label>
                         <b-tooltip label="Due to unpredicatble formatting of territories, the import might fail. You will be asked to confirm everything before finalizing the import" position="is-left" multilined>Streets</b-tooltip>
                     </template>
@@ -37,6 +37,13 @@
                             </div>
                         </section>
                     </b-upload>
+                    <div class="tags">
+                    <span v-for="(file, index) in files"
+                        :key="index"
+                        class="tag is-primary" >
+                        {{file.name}}
+                    </span>
+        </div>
                 </b-field>
             </section>
             <footer class="modal-card-foot">
@@ -65,7 +72,8 @@ export default {
                 name: null,
                 _streets: [],
                 streetFiles: []
-            }
+            },
+            files : [],
         }
     },
     methods: {
@@ -98,12 +106,17 @@ export default {
                 })
             }
             this.isLoading = false;
+            this.files = [...this.files, ...this.territory.streetFiles];
             this.territory.streetFiles = [];
+
         },
         importTerritory(){
             delete this.territory.streetFiles;
             this.$emit("newTerritory", this.territory);
             this.$parent.close()
+        },
+        deleteDropFile(index) {
+            this.territory.streetFiles.splice(index, 1)
         }
     },
 
