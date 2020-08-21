@@ -45,14 +45,15 @@ export default {
             for(let territory of this.territories){
                 territory._streets = territory._streets ? territory._streets : [];
                 for(let street of territory._streets){
-                    if(street.checked_out){
-                        doesntHaveTerritory = street.checked_out_by != this.user.user_id && this.user.is_publisher && street.returned_at == null
+                    if(street.checked_out && street.checked_out_by == this.user.user_id && street.returned_at == null){
+                        doesntHaveTerritory = false;
                         if(!doesntHaveTerritory){
                             checked_out_street = street;
                         }
                     }
                 }
                 if(!doesntHaveTerritory){
+                    console.log(checked_out_street);
                     break;
                 }
             }
@@ -112,7 +113,6 @@ export default {
         },
         returnStreet(territory, oldStreet, street){
             street.returned_at = new Date();
-            street.checked_out_by = null;
             this.updateStreet(territory, oldStreet, street)
             this.$forceUpdate();
         },
