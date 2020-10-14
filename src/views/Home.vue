@@ -10,7 +10,12 @@
         <template v-slot="props">
           <b-table-column field="street_name" label="Street Name">{{props.row.name}}</b-table-column>
           <!-- <b-table-column field="checkout_date" label="Checked Out">{{props.row.last_checkout}}</b-table-column> -->
-          <b-table-column field="actions" label="Actions"><b-button @click="returnStreet(props.row)">Return</b-button></b-table-column>
+          <b-table-column field="actions" label="Actions">
+            <b-button v-if="props.row.checked_out_by == user.user_id && props.row.checked_out == true" @click="downloadStreet(props.row.territory, props.row)" style="margin-right: 1em;">
+              View Street
+            </b-button>  
+            <b-button @click="returnStreet(props.row)">Return</b-button>
+          </b-table-column>
         </template>
       </b-table>
     </div>
@@ -41,7 +46,7 @@ export default {
       street.checked_out = false;
       let territory =  street.territory;
       delete street.territory;
-      this.updateStreet(territory, null, street).then(()=>{})
+      this.updateStreet(territory, null, street, street.checked_out_by, false).then(()=>{})
     }
   },
   mixins: [firebaseMixin],

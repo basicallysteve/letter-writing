@@ -7,7 +7,8 @@
             class="card-header"
             role="button">
             <div class="card-header-title" style="display: flex; flex-flow: row; justify-content: space-between;" >
-                {{formattedTerritory.name ? formattedTerritory.name : "New Territory"}}
+                {{formattedTerritory.name ? formattedTerritory.name : "New Territory"}}: 
+                {{numberOfAvailableStreets}} streets available
             </div>
             
             <a class="card-header-icon">
@@ -24,7 +25,7 @@
                         <b-field label="Available"  style="margin-left: 1em;" horizontal><b-checkbox v-model="territory.is_visible" /></b-field>
                     </div>
                     <div v-for="(street, index) in formattedTerritory._streets" :key="index" class="street">
-                        <div style="margin-right: 1em;" class="info" v-if="territory.territory_id">
+                        <div style="margin-right: 1em; display: flex; flex-flow: row" class="info" v-if="territory.territory_id">
                             {{street.name}} | {{street.houses}} houses 
                             {{street.last_checkout != null ? `| ${formatDate(street.last_checkout, "Checked out")} by ${street.checked_out_name}` : ""}}
                             {{street.returned_at != null ? `| ${formatDate(street.returned_at, "Returned")}` : ""}}
@@ -38,7 +39,9 @@
                             <b-button :disabled="!canCheckout || street.release_from_hold == false" v-if="!street.checked_out" @click="toggleCheckout(street)">Check Out</b-button>
                             <b-button v-else disabled>Checked Out</b-button>
                             <b-button @click="toggleCheckout(street)" v-if="street.checked_out_by == user.user_id && street.checked_out == true">Return</b-button>
-
+                            <b-button v-if="street.checked_out_by == user.user_id && street.checked_out == true && !$attrs.canCD" @click="downloadStreet(territory, street)">
+                                   View Street
+                            </b-button>        
                             <b-dropdown v-if="($attrs.canCD ? $attrs.canCD : false )">
                                 <b-button slot="trigger" slot-scope="{ active }" :icon-left="active ? 'menu-up' : 'menu-down'">Actions</b-button>
                                 <b-dropdown-item aria-role="listitem" v-if="street.checked_out" @click="returnStreet(street)">
@@ -107,6 +110,12 @@ export default {
             })()
             
             return territory;
+        },
+        numberOfAvailableStreets(){
+            let availableStreets = this.formattedTerritory._streets.filter(street=>{
+                return street.checked_out != true && street.returned_at == null;
+            })
+            return availableStreets.length
         }
     },
     data(){

@@ -9,11 +9,12 @@
         <div style="display: flex; flex-flow: row; align-items: center; justify-content: flex-start; width: 100%;  margin-right: 1em; margin-bottom: 1em;">
            
             <territory-type-input @select="selectType" clearable/>
+            <b-input placeholder="Search Street" style="margin-left: 1em;" v-model="searchedStreet"/>
             <b-field  v-if="user ? user.is_territory_servant || user.is_admin : false" horizontal >
                 <b-checkbox true-value="Available Territories" false-value="Unavaiable Territories" v-model="availability" style="white-space: nowrap;">View {{availability}}</b-checkbox>
             </b-field>
         </div>
-        <div v-for="territory in territories" :key="territory.territory_id">
+        <div v-for="territory in filteredTerritories" :key="territory.territory_id">
         <territory 
          :territory="territory" 
   
@@ -40,6 +41,7 @@ export default {
     },
     computed: {
         canCheckoutTerritory(){
+            return this.user.num_of_checked_out_streets < this.user.max_number_of_streets;
             let doesntHaveTerritory = true;
             let checked_out_street;
             for(let territory of this.territories){
@@ -53,11 +55,27 @@ export default {
                     }
                 }
                 if(!doesntHaveTerritory){
-                    console.log(checked_out_street);
                     break;
                 }
             }
             return doesntHaveTerritory
+        },
+        filteredTerritories(){
+            if(this.searchedStreet == null || this.searchedStreet.trim() == ""){
+                return this.territories;
+            }
+            let territories = [];
+            for(let territory of this.territories){
+                let matchesSearch = territory._streets.findIndex(street=>{
+                    return street.name.toLowerCase().startsWith(this.searchedStreet.toLowerCase());
+                })
+
+                if(matchesSearch > -1){
+                    territories.push(territory);
+                }
+            }
+
+            return territories;
         }
     },
     data(){
@@ -67,6 +85,7 @@ export default {
             territoryListener: null,
             availability: "Available Territories",
             queries: [],
+            searchedStreet: null
         }
     },
     methods: {
@@ -81,7 +100,8 @@ export default {
         checkoutStreet(territory, oldStreet, street){
             street.last_checkout = new Date();
             street.checked_out_by = this.user.user_id;
-            this.updateStreet(territory, oldStreet, street).then(()=>{
+            this.user.num_of_checked_out_streets = this.user.num_of_checked_out_streets ? this.user.num_of_checked_out_streets+1 : 1; 
+            this.updateStreet(territory, oldStreet, street, street.checked_out_by, true).then(()=>{
                 this.downloadStreet(territory, street);
             })
 
@@ -113,7 +133,9 @@ export default {
         },
         returnStreet(territory, oldStreet, street){
             street.returned_at = new Date();
-            this.updateStreet(territory, oldStreet, street)
+            this.user.num_of_checked_out_streets = this.user.num_of_checked_out_streets ? this.user.num_of_checked_out_streets-1 : 0; 
+
+            this.updateStreet(territory, oldStreet, street, street.checked_out_by)
             this.$forceUpdate();
         },
         selectType(type){

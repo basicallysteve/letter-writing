@@ -115,12 +115,24 @@ export default {
             return db.collection("/territories").doc(territory.territory_id).update(territory);
         },
 
-        updateStreet(territory, oldStreet, street){
+        updateStreet(territory, oldStreet, street, user_ref, add){
             let db = firebase.firestore();
             let streets = territory._streets.filter(territoryStreet=>{
                 return street.name != territoryStreet.name
             })
             streets.push(street);
+            if(user_ref != null){
+                this.fetchUserById(user_ref).then(doc=>{
+                    let user = doc.data();
+                    if(add){
+                        user.num_of_checked_out_streets = user.num_of_checked_out_streets ? user.num_of_checked_out_streets + 1 : 1; 
+                    }else{
+                        user.num_of_checked_out_streets = user.num_of_checked_out_streets ? user.num_of_checked_out_streets - 1 : 0; 
+                    }
+                    this.updateUser(user);
+                })
+            }
+            
             return db.collection("/territories").doc(territory.territory_id).update({
                 _streets: streets
             })
