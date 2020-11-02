@@ -6,7 +6,7 @@
             slot-scope="props"
             class="card-header"
             role="button">
-            <div class="card-header-title" style="display: flex; flex-flow: row; justify-content: space-between;" >
+            <div class="card-header-title territory-title" style="display: flex; flex-flow: row; justify-content: space-between;" >
                 {{formattedTerritory.name ? formattedTerritory.name : "New Territory"}}: 
                 {{numberOfAvailableStreets}} streets available
             </div>
@@ -43,7 +43,7 @@
                                    View Street
                             </b-button>        
                             <b-dropdown v-if="($attrs.canCD ? $attrs.canCD : false )">
-                                <b-button slot="trigger" slot-scope="{ active }" :icon-left="active ? 'menu-up' : 'menu-down'">Actions</b-button>
+                                <b-button  slot="trigger" slot-scope="{ active }" :icon-left="active ? 'menu-up' : 'menu-down'">Actions</b-button>     
                                 <b-dropdown-item aria-role="listitem" v-if="street.checked_out" @click="returnStreet(street)">
                                     <label class="upload control">Return Street</label>
                                 </b-dropdown-item>
@@ -68,6 +68,30 @@
                                 </a>
                             </b-upload>
                             <b-button type="is-danger" icon-left="delete" @click="deleteStreet(index)">Delete Street</b-button>
+                        </div>
+                        <div class="mobile-actions">
+                             <b-dropdown v-if="($attrs.canCD ? $attrs.canCD : false )">
+                                <b-button slot="trigger" slot-scope="{ active }" :icon-left="active ? 'menu-up' : 'menu-down'">Actions</b-button>
+                                <b-dropdown-item  aria-role="listitem" :disabled="!canCheckout || street.release_from_hold == false" v-if="!street.checked_out" @click="toggleCheckout(street)">Check Out</b-dropdown-item>
+                                <b-dropdown-item  aria-role="listitem" v-else disabled>Checked Out</b-dropdown-item>
+                                <b-dropdown-item  aria-role="listitem" v-if="street.checked_out_by == user.user_id && street.checked_out == true && !$attrs.canCD" @click="downloadStreet(territory, street)">
+                                   View Street
+                                </b-dropdown-item>   
+                                <b-dropdown-item aria-role="listitem" v-if="(street.checked_out_by == user.user_id || $attrs.canCD) && street.checked_out" @click="returnStreet(street)">
+                                    <label class="upload control">Return Street</label>
+                                </b-dropdown-item>
+                                <b-dropdown-item aria-role="listitem" v-if="street.returned_at != null && !street.release_from_hold" @click="releaseFromHold(street)">
+                                    <label class="upload control">Release from Hold</label>
+                                </b-dropdown-item>
+                                <b-dropdown-item aria-role="listitem">
+                                     <b-upload v-model="street.file" accept=".pdf"  @input="uploadStreet($event, street)" :disabled="street.name == null"  v-if="$attrs.canCD">
+                                         Upload Street
+                                    </b-upload>
+                                </b-dropdown-item>
+                                <b-dropdown-item aria-role="listitem" @click="downloadStreet(territory, street)">
+                                   <label class="upload control" > Preview Upload</label>
+                                </b-dropdown-item>
+                            </b-dropdown>
                         </div>
                         <hr />
                     </div>
@@ -270,6 +294,33 @@ export default {
             justify-content: flex-end;
             button {
                 margin-right: .5em;
+            }
+        }
+
+        .mobile-actions {
+            diplay: none;
+        }
+
+        @media screen and (max-width: 1366px){
+            .territory-title {
+                font-size: 14px;
+            }
+            .info {
+                display: flex;
+                font-size: 13px;
+            }
+            .actions {
+                display: none;
+            }
+
+            .mobile-actions {
+                width: 50%;
+                display: flex;
+                flex-flow: row;
+                justify-content: flex-end;
+                button {
+                    margin-right: .5em;
+                }
             }
         }
 
