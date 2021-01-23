@@ -41,7 +41,7 @@ export default {
     },
     computed: {
         canCheckoutTerritory(){
-            return this.user.num_of_checked_out_streets < this.user.max_number_of_streets;
+            return this.user.num_of_checked_out_streets < this.user.max_num_of_streets;
             let doesntHaveTerritory = true;
             let checked_out_street;
             for(let territory of this.territories){
