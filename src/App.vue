@@ -54,7 +54,9 @@ export default {
     return {
       currentUser: null,
       profile: {
-        is_publisher: false
+        is_publisher: false,
+        max_number_of_streets: 1,
+        num_of_checked_out_streets: 0
       }
     }
   },

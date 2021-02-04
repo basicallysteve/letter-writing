@@ -21,7 +21,7 @@
         @saveTerritory="saveTerritory"
         @deleteTerritory="removeTerritory" 
         @updateTerritory="updateTerritory"
-        :canCD="user? user.is_admin || user.is_territory_servant : false" 
+        :isSpecialUser="user? user.is_admin || user.is_territory_servant : false" 
         :user="user" 
         @checkoutStreet="checkoutStreet" 
         @returnStreet="returnStreet" 
@@ -41,7 +41,7 @@ export default {
     },
     computed: {
         canCheckoutTerritory(){
-            return this.user.num_of_checked_out_streets < this.user.max_num_of_streets;
+            return this.user.num_of_checked_out_streets < this.user.max_number_of_streets;
             let doesntHaveTerritory = true;
             let checked_out_street;
             for(let territory of this.territories){
@@ -165,7 +165,9 @@ export default {
             type: Object,
             default(){
                 return {
-                    user_id: null
+                    user_id: null,
+                    max_number_of_streets: 1,
+                    num_of_checked_out_streets: 0
                 }
             }
         },

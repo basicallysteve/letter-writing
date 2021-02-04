@@ -45,6 +45,7 @@ export default {
       street.returned_at = new Date();
       street.checked_out = false;
       let territory =  street.territory;
+      this.user.num_of_checked_out_streets--;
       delete street.territory;
       this.updateStreet(territory, null, street, street.checked_out_by, false).then(()=>{})
     }
