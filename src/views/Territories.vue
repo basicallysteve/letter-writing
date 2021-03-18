@@ -95,7 +95,11 @@ export default {
             this.territories.push(territory)
         },
         saveTerritory(territory){
-            this.createTerritory(territory);
+            if(!territory.territory_id){
+                this.createTerritory(territory);
+            }else{
+                this.updateTerritory(territory);
+            }
         },
         checkoutStreet(territory, oldStreet, street){
             street.last_checkout = new Date();
@@ -109,7 +113,19 @@ export default {
         openTerritoryImportWindow(){
             this.territory_form = true;
         },
-        removeTerritory(territory_id){
+        removeTerritory(territory){
+            if(territory.territory_id){
+                territory.deleted_at = new Date();
+                this.updateTerritory(territory);
+                for(let street of territory._streets){
+                    try{
+                        this.deleteFile(`territories/${territory.name}/${street.name}.pdf`)
+                    }catch(err){
+                        console.log(err);
+                    }
+                }
+            }
+            
             // this.deleteTerritory(territory_id)
         },
         loadTerritories(){

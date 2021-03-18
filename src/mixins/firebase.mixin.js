@@ -166,10 +166,6 @@ export default {
                console.log(err);
             })
         },
-        onTerritoryUpdate(cb){
-            let db = firebase.firestore();
-            return db.collection("/territories").onSnapshot(cb);
-        },
 
         async fetchStreets(user_id){
             let streets = []

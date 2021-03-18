@@ -15,7 +15,10 @@ export default {
                     released_at: null,
                     last_checkout: null,
                     returned_at: null,
-                    pdf_format: true
+                    pdf_format: true,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+                    deleted_at: null
                 }
                 const reader = new FileReader();
                 reader.onload = ()=>{
