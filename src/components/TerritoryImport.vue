@@ -14,19 +14,20 @@
                     </b-input>
                 </b-field>
 
-                <b-field style="display: flex; flex-flow: column">
+                <b-field class="col f-width">
                     <template #label>
                         <b-tooltip label="Due to unpredicatble formatting of territories, the import might fail. You will be asked to confirm everything before finalizing the import" position="is-left" multilined>Streets</b-tooltip>
                     </template>
                     <b-upload
-                        v-model="territory.streetFiles"
+                        :value="territory.streetFiles"
                         drag-drop
                         multiple
                         accept=".xlsx"
                         @input="readFiles"
-                        required>
-                        <section class="section">
-                            <div class="content has-text-centered">
+                        required
+                        class="">
+                        <section class="section ">
+                            <div class="content has-text-centered ">
                                 <p>
                                     <b-icon
                                         icon="upload"
@@ -46,9 +47,9 @@
         </div>
                 </b-field>
             </section>
-            <footer class="modal-card-foot">
+            <footer class="modal-card-foot f-width row">
                 <button class="button" type="button" @click="$parent.close()">Close</button>
-                <b-button type="is-primary" :loading="isLoading" @click="importTerritory">Import</b-button>
+                <b-button type="is-primary" :loading="isLoading" @click="importTerritory">{{territory.streetFiles.length > 0 ? "Import" : "New Territory"}}</b-button>
             </footer>
         </div>
     </form>
@@ -57,8 +58,6 @@
 import xlsx from "@/mixins/xlsx.mixin.js";
 import firebase from "@/mixins/firebase.mixin.js";
 import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import fb from "@/firebaseConfig.js";
 
 window.html2canvas = html2canvas;
 export default {
@@ -82,26 +81,6 @@ export default {
             for await(let file of this.territory.streetFiles){
                 this.readStreet(file).then(street=>{
                     this.territory._streets.push(street);
-                    // let el = document.createElement("div");
-                    // el.innerHTML = street.html.trim();
-                    // el.setAttribute("style", "z-index: -1");
-                    // let importWin = document.getElementById("import-window");
-                    // importWin.appendChild(el);
-                    // html2canvas(el)
-                    // .then((canvas) => {
-                        // importWin.removeChild(el);
-                        // const img = canvas.toDataURL('image/png')
-                        // const pdf = new jsPDF({
-                        //     orientation: "p",
-                        //     format: "a4"
-                        // })
-                        // const imgProps= pdf.getImageProperties(img);
-                        // const width = pdf.internal.pageSize.getWidth();
-                        // const height = (imgProps.height * width) / imgProps.width;
-                        // pdf.addImage(img, 'JPEG', 0, 0, width, height)
-                        // pdf.save('your-filename.pdf')
-                        // let fileBlob = pdf.output("blob");
-                    // })
                     
                 })
             }
@@ -124,3 +103,20 @@ export default {
 
 }
 </script>
+
+<style lang="scss">
+    .col {
+        display: flex; 
+        flex-flow: column;
+        align-items: center;
+    }
+
+    .row {
+        display: flex;
+        flex-flow: row;
+        justify-content: space-between;
+    }
+    .f-width {
+        width: 100%;
+    }
+</style>
