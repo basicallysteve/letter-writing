@@ -19,7 +19,7 @@ export default {
         async fetchStreets(territoryId, queries = []){
             let streets = []
 
-            let ref = this.db.collection(`territories`).doc(`${territoryId}`).collection(`streets`);
+            let ref = territoryId ? this.db.collection(`territories`).doc(`${territoryId}`).collection(`streets`) : this.db.collectionGroup('streets');
 
             for(let query of queries){
                 ref = ref[query.name](...query.items)

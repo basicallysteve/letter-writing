@@ -27,8 +27,7 @@
 
 <script>
 // @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
-import firebaseMixin from "@/mixins/firebase.mixin.js";
+import territoryMixin from "@/mixins/territory.mixin.js";
 export default {
   data(){
     return {
@@ -37,7 +36,11 @@ export default {
   },
   methods: {
     loadStreetsForUser(){
-      this.fetchStreets(this.user.user_id).then(response=>{
+      let queries = [{
+                name: "where",
+                items: ["checked_out_by", "==", this.user.user_id ] 
+          }]
+      this.fetchStreets(null, queries).then(response=>{
           this.streets = response
         })
     },
@@ -50,7 +53,7 @@ export default {
       this.updateStreet(territory, null, street, street.checked_out_by, false).then(()=>{})
     }
   },
-  mixins: [firebaseMixin],
+  mixins: [territoryMixin],
 
   mounted(){
     this.onTerritoryUpdate(()=>{
