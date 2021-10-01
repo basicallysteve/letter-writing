@@ -246,7 +246,7 @@ export default {
            }
        }
     },
-    mixins: [firebaseMixin, territoryMixin],
+    mixins: [territoryMixin],
     mounted(){
         if(this.territory.territory_id){
             this.onTerritoryUpdate(this.territory.territory_id, this.loadStreet)
