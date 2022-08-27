@@ -12,6 +12,9 @@
           <router-link to="territories">Territories</router-link>
         </b-navbar-item>
         <b-navbar-item>
+          <router-link to="history"  v-if="profile ? profile.is_admin : false">History</router-link>
+        </b-navbar-item>
+        <b-navbar-item>
           <router-link to="admin" v-if="profile ? profile.is_admin : false">Admin</router-link>
         </b-navbar-item>
       </template>

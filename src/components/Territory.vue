@@ -23,6 +23,12 @@
                     <div class="row inputs" v-if="isSpecialUser">
                         <territory-type-input :defaultValue="territory.type ? territory.type.name : null"  @select="selectTerritoryType" style="width: 100%"/>
                         <b-field label="Available"  class="ml-1" horizontal><b-checkbox v-model="territory.is_visible" /></b-field>
+                         <b-upload v-model="territory.file" accept=".pdf"  @input="updateMap($event)">
+                                <a class="button is-primary">
+                                    <b-icon icon="upload"></b-icon>
+                                    <span>Upload Map</span>
+                                </a>
+                            </b-upload>
                     </div>
                     <div v-for="(street, index) in allStreets" :key="index" class="street">
                         <div class="info row mr-1" v-if="territory.territory_id && street.street_id">
@@ -80,6 +86,7 @@
                         </div>
                         <hr />
                     </div>
+                    <b-button v-show="territory.has_map" icon-left="download" @click="checkoutTerritory" style="margin-right: 1em;">Download Map</b-button>
                     <b-button type="is-primary" icon-left="plus"  @click="addStreet" v-if="isSpecialUser" style="margin-right: 1em;">Add Street</b-button>
                     <b-button type="is-success" icon-left="floppy" @click="saveTerritory" v-if="isSpecialUser" style="margin-right: 1em;" :disabled="allStreets.length == 0">Save Territory</b-button>
                     <b-button type="is-danger" icon-left="delete" @click="deleteTerritory"  v-if="isSpecialUser" style="margin-right: 1em;">Delete Territory</b-button>
@@ -117,6 +124,16 @@ export default {
         }
     },
     methods: {
+        checkoutTerritory(){
+            this.downloadMap(this.territory);
+        },
+        updateMap(event){
+            this.saveFile(event, `territories/${this.territory.name}/map.pdf`).then(()=>{
+                let territory = JSON.parse(JSON.stringify(this.territory));
+                territory.has_map = true;
+                this.$emit("updateTerritory", territory);
+            });
+        },
         addStreet(){
             this.newStreets.push({
                 name: null,

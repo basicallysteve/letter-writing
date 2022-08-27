@@ -6,7 +6,9 @@ import buefy from "buefy";
 import 'buefy/dist/buefy.css'
 const fb = require('./firebaseConfig.js')
 import firebase from "firebase";
-
+import AsyncComputed from 'vue-async-computed'
+ 
+Vue.use(AsyncComputed)
 Vue.config.productionTip = false
 Vue.use(buefy);
 Vue.mixin({

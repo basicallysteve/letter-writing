@@ -1,4 +1,5 @@
 import firebase from "firebase";
+import moment from "moment";
 const fb = require('@/firebaseConfig.js')
 
 export default {
@@ -96,8 +97,9 @@ export default {
                     territoriesSnapshot.forEach(async (doc)=>{
                     let territory = doc.data();
                     territory.territory_id = doc.id;
-                    if(territory.type_ref){
-                    let type = await territory.type_ref.get();
+                    if(territory.type_ref && territory.type_ref.get){
+                        console.log(territory.type_ref.get)
+                    let type = await territory.type_ref?.get();
                     territory.type = type.data();
                     }else{
                         territory.type = {}
@@ -129,6 +131,31 @@ export default {
                 });
             });
         },
+
+        async fetchTerritoryHistory(queries = []){
+            let db = firebase.firestore();
+            let history = [];
+            for(let query of queries){
+                ref = ref[query.name](...query.items)
+            }
+            let ref =  db.collection("/analytics/territories/street-history");
+            let historyData = await ref.get();
+            return new Promise((res, rej)=>{
+                historyData.forEach((doc)=>{
+                    let item = doc.data();
+                    item.street?.get().then(response => {
+                        item.checked_out_at = item.checked_out_at ? moment(new firebase.firestore.Timestamp(item.checked_out_at.seconds, item.checked_out_at.nanoseconds).toDate()) : null
+                        item.returned_at = item.returned_at ? moment(new firebase.firestore.Timestamp(item.returned_at.seconds, item.returned_at.nanoseconds).toDate()) : null
+                        history.push(item)
+                        if(history.length == historyData.size){
+                            res(history);
+                        }
+                    })
+                    // item.returned_at = firebase.toDateitem.returned_at);
+                   
+                });
+            });
+        },
         updateTerritory(territory){
             let db = firebase.firestore();
             return db.collection("/territories").doc(territory.territory_id).update(territory);
@@ -137,7 +164,29 @@ export default {
             let db = firebase.firestore();
             return db.collection("/territories").doc(territory_id).delete();
         },
+        downloadMap(territory){
+            let territories = firebase.storage().ref(`territories`)
 
+            let territoryname = territory.name.split(" ");
+            territoryname = territoryname.join(" ");
+            let bucket =`/${territoryname}/map.pdf`;
+            territories.child(bucket).getDownloadURL().then(url=>{
+                let a = document.createElement("a");
+                let downloadFile = `${territory.name}.pdf`;
+                
+                a.download = downloadFile;
+                a.href = url;     
+                a.target =  "_blank";          
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                
+               
+                document.body.removeChild(a);
+            }).catch(err=>{
+               console.log(err);
+            })
+        },
         downloadStreet(territory, street){
             let territories = firebase.storage().ref(`territories`)
 

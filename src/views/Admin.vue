@@ -5,6 +5,7 @@
         <template v-slot="props">
             <b-table-column label="User">{{props.row.name}}</b-table-column>
             <b-table-column label="Email">{{props.row.email}}</b-table-column>
+            <b-table-column label="Max Number of Streets"><b-input @input="updateUser(props.row)" v-model="props.row.max_number_of_streets" type="number" :min="0" /></b-table-column>
             <b-table-column label="Actions">
                 <b-button type="is-danger" :disabled="$attrs.user ? !$attrs.user.is_super_admin : false" @click="deleteUser(props.row.user_id)">Delete User</b-button>
             </b-table-column>
