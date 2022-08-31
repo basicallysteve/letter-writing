@@ -27,3 +27,10 @@ yarn-error.log*
 *.xlsx
 *.pdf
 *.ods
+functions/firestore-debug.log
+functions/firebase-debug.log
+firebase-debug.log
+functions/.env
+functions/ui-debug.log
+functions/src/stagingServiceKey.json
+functions/src/modules/reports/serviceAccountKey.ts

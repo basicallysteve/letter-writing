@@ -46,6 +46,14 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '@/views/Territories.vue'),
   },
   {
+    path: '/history',
+    name: 'Territory History',
+    meta: {
+      requiresAuth: true
+    },
+    component: () => import(/* webpackChunkName: "about" */ '@/views/TerritoryHistory.vue'),
+  },
+  {
     path: "/admin",
     name: "Admin",
     meta: {

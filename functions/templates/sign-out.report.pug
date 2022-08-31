@@ -1,0 +1,16 @@
+-if(addHeader)
+    h1 Sign Out Report 
+- var tableHeaders = ["Territory", "Street", "Checked Out At", "Returned At", "By"];
+table(style={'border-collapse': 'collapse', 'border': '1px solid #000'})
+    thead(style={background: "#ccc", 'font-size': '12px', 'break-inside':'avoid'})
+        tr
+            each header in tableHeaders 
+                th(style={'padding': '5px', 'border': '1px solid #000'})=header 
+    tbody 
+        each item in history
+            tr(style={'font-size': '8px', 'border-bottom': '1px solid #323232', 'margin': '5px'}) 
+                td(style={'border-right': '1px solid #323232'})=item.territory.name
+                td(style={'border-right': '1px solid #323232', 'white-space':'nowrap'})=item.street.name
+                td(style={'border-right': '1px solid #323232'})=item.last_checkout
+                td(style={'border-right': '1px solid #323232'})=item.returned_at
+                td=item.checkedOutBy.name

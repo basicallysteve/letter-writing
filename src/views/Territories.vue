@@ -9,7 +9,7 @@
         <div style="display: flex; flex-flow: row; align-items: center; justify-content: flex-start; width: 100%;  margin-right: 1em; margin-bottom: 1em;">
            
             <territory-type-input @select="selectType" clearable/>
-            <b-input placeholder="Search Street" style="margin-left: 1em;" v-model="searchedStreet"/>
+            <b-input placeholder="Search Street" style="margin-left: 1em;" v-model="searchedStreet" disabled/>
             <b-field  v-if="user ? user.is_territory_servant || user.is_admin : false" horizontal >
                 <b-checkbox true-value="Available Territories" false-value="Unavaiable Territories" v-model="availability" style="white-space: nowrap;">View {{availability}}</b-checkbox>
             </b-field>
@@ -21,7 +21,7 @@
         @saveTerritory="saveTerritory"
         @deleteTerritory="removeTerritory" 
         @updateTerritory="updateTerritory"
-        :canCD="user? user.is_admin || user.is_territory_servant : false" 
+        :isSpecialUser="user? user.is_admin || user.is_territory_servant : false" 
         :user="user" 
         @checkoutStreet="checkoutStreet" 
         @returnStreet="returnStreet" 
@@ -32,7 +32,7 @@
     </div>
 </template>
 <script>
-import firebaseMixin from "@/mixins/firebase.mixin.js";
+import territoryMixin from "@/mixins/territory.mixin.js";
 export default {
     components: {
         'territory': ()=>import("@/components/Territory"),
@@ -42,23 +42,6 @@ export default {
     computed: {
         canCheckoutTerritory(){
             return this.user.num_of_checked_out_streets < this.user.max_number_of_streets;
-            let doesntHaveTerritory = true;
-            let checked_out_street;
-            for(let territory of this.territories){
-                territory._streets = territory._streets ? territory._streets : [];
-                for(let street of territory._streets){
-                    if(street.checked_out && street.checked_out_by == this.user.user_id && street.returned_at == null){
-                        doesntHaveTerritory = false;
-                        if(!doesntHaveTerritory){
-                            checked_out_street = street;
-                        }
-                    }
-                }
-                if(!doesntHaveTerritory){
-                    break;
-                }
-            }
-            return doesntHaveTerritory
         },
         filteredTerritories(){
             if(this.searchedStreet == null || this.searchedStreet.trim() == ""){
@@ -95,7 +78,11 @@ export default {
             this.territories.push(territory)
         },
         saveTerritory(territory){
-            this.createTerritory(territory);
+            if(!territory.territory_id){
+                this.createTerritory(territory);
+            }else{
+                this.updateTerritory(territory);
+            }
         },
         checkoutStreet(territory, oldStreet, street){
             street.last_checkout = new Date();
@@ -109,8 +96,18 @@ export default {
         openTerritoryImportWindow(){
             this.territory_form = true;
         },
-        removeTerritory(territory_id){
-            // this.deleteTerritory(territory_id)
+        removeTerritory(territory){
+            if(territory.territory_id){
+                territory.deleted_at = new Date();
+                this.updateTerritory(territory);
+                for(let street of territory._streets){
+                    try{
+                        this.deleteFile(`territories/${territory.name}/${street.name}.pdf`)
+                    }catch(err){
+                        console.log(err);
+                    }
+                }
+            }
         },
         loadTerritories(){
             let availabilityQuery = {
@@ -153,19 +150,18 @@ export default {
             this.loadTerritories();
         }
     },
-    mixins: [firebaseMixin],
+    mixins: [territoryMixin],
     mounted(){
         this.loadTerritories()
-        this.territoryListener = this.onTerritoryUpdate(()=>{
-            this.loadTerritories();
-        })
     },
     props: {
         user: {
             type: Object,
             default(){
                 return {
-                    user_id: null
+                    user_id: null,
+                    max_number_of_streets: 1,
+                    num_of_checked_out_streets: 0
                 }
             }
         },

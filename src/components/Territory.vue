@@ -1,13 +1,13 @@
 <template>
 
-    <b-collapse class="card" animation="slide" style="margin-bottom: 1em;" :open="false">
+    <b-collapse class="card mb-1" animation="slide" :open="false" @open="loadStreets">
         <div
             slot="trigger" 
             slot-scope="props"
             class="card-header"
             role="button">
-            <div class="card-header-title" style="display: flex; flex-flow: row; justify-content: space-between;" >
-                {{formattedTerritory.name ? formattedTerritory.name : "New Territory"}}: 
+            <div class="card-header-title territory-title header">
+                {{territory.name ? territory.name : "New Territory"}}: 
                 {{numberOfAvailableStreets}} streets available
             </div>
             
@@ -20,45 +20,34 @@
         <div class="card-content">
             <div class="content">
                 <div>
-                    <div style="display: flex; flex-flow: row; justify-content: space-between;" v-if="$attrs.canCD">
+                    <div class="row inputs" v-if="isSpecialUser">
                         <territory-type-input :defaultValue="territory.type ? territory.type.name : null"  @select="selectTerritoryType" style="width: 100%"/>
-                        <b-field label="Available"  style="margin-left: 1em;" horizontal><b-checkbox v-model="territory.is_visible" /></b-field>
+                        <b-field label="Available"  class="ml-1" horizontal><b-checkbox v-model="territory.is_visible" /></b-field>
+                         <b-upload v-model="territory.file" accept=".pdf"  @input="updateMap($event)">
+                                <a class="button is-primary">
+                                    <b-icon icon="upload"></b-icon>
+                                    <span>Upload Map</span>
+                                </a>
+                            </b-upload>
                     </div>
-                    <div v-for="(street, index) in formattedTerritory._streets" :key="index" class="street">
-                        <div style="margin-right: 1em; display: flex; flex-flow: row" class="info" v-if="territory.territory_id">
+                    <div v-for="(street, index) in allStreets" :key="index" class="street">
+                        <div class="info row mr-1" v-if="territory.territory_id && street.street_id">
                             {{street.name}} | {{street.houses}} houses 
                             {{street.last_checkout != null ? `| ${formatDate(street.last_checkout, "Checked out")} by ${street.checked_out_name}` : ""}}
                             {{street.returned_at != null ? `| ${formatDate(street.returned_at, "Returned")}` : ""}}
                         </div>
-                        <div class="info inputs" v-else>
-                            <b-input type="text" v-model="street.name" placeholder="Main Street" style="margin-right: 1em;"/>
-                            <b-input type="number" v-model="street.houses" placeholder="10 houses" style="margin-right: 1em;"/>
+                        <div class="info inputs" v-else-if="street.street_id == null">
+                            <b-input class="mr-1" type="text" v-model="street.name" placeholder="Main Street" />
+                            <b-input class="mr-1" type="number" v-model="street.houses" placeholder="10 houses" />
                             <div>{{street.file ? street.file.name : null}}</div>
                         </div>
                         <div class="actions" v-if="territory.territory_id">
-                            <b-button :disabled="!canCheckout || street.release_from_hold == false" v-if="!street.checked_out" @click="toggleCheckout(street)">Check Out</b-button>
-                            <b-button v-else disabled>Checked Out</b-button>
+                            <b-button :disabled="!canCheckout || street.release_from_hold == false" v-if="!street.checked_out && !isSpecialUser" @click="toggleCheckout(street)">Check Out</b-button>
+                            <b-button v-else-if="!isSpecialUser" disabled>Checked Out</b-button>
                             <b-button @click="toggleCheckout(street)" v-if="street.checked_out_by == user.user_id && street.checked_out == true">Return</b-button>
-                            <b-button v-if="street.checked_out_by == user.user_id && street.checked_out == true && !$attrs.canCD" @click="downloadStreet(territory, street)">
+                            <b-button v-if="street.checked_out_by == user.user_id && street.checked_out == true && !isSpecialUser" @click="downloadStreet(territory, street)">
                                    View Street
                             </b-button>        
-                            <b-dropdown v-if="($attrs.canCD ? $attrs.canCD : false )">
-                                <b-button slot="trigger" slot-scope="{ active }" :icon-left="active ? 'menu-up' : 'menu-down'">Actions</b-button>
-                                <b-dropdown-item aria-role="listitem" v-if="street.checked_out" @click="returnStreet(street)">
-                                    <label class="upload control">Return Street</label>
-                                </b-dropdown-item>
-                                <b-dropdown-item aria-role="listitem" v-if="street.returned_at != null && !street.release_from_hold" @click="releaseFromHold(street)">
-                                    <label class="upload control">Release from Hold</label>
-                                </b-dropdown-item>
-                                <b-dropdown-item aria-role="listitem">
-                                     <b-upload v-model="street.file" accept=".pdf"  @input="uploadStreet($event, street)" :disabled="street.name == null"  v-if="$attrs.canCD">
-                                         Upload Street
-                                    </b-upload>
-                                </b-dropdown-item>
-                                <b-dropdown-item aria-role="listitem" @click="downloadStreet(territory, street)">
-                                   <label class="upload control" > Preview Upload</label>
-                                </b-dropdown-item>
-                            </b-dropdown>
                         </div>
                         <div class="actions" v-else>
                             <b-upload v-model="street.file" accept=".pdf"  @input="uploadStreet($event, street)" :disabled="street.name == null">
@@ -67,13 +56,40 @@
                                     <span>Upload Street</span>
                                 </a>
                             </b-upload>
-                            <b-button type="is-danger" icon-left="delete" @click="deleteStreet(index)">Delete Street</b-button>
+                            <b-button type="is-danger" icon-left="delete" @click="deleteStreet(street)">Delete Street</b-button>
+                        </div>
+                        <div class="mobile-actions">
+                             <b-dropdown v-if="(territory.territory_id)">
+                                <b-button slot="trigger" slot-scope="{ active }" :icon-left="active ? 'menu-up' : 'menu-down'">Actions</b-button>
+                                <b-dropdown-item  aria-role="listitem" :disabled="!canCheckout || street.release_from_hold == false" v-if="!street.checked_out" @click="toggleCheckout(street)">Check Out</b-dropdown-item>
+                                <b-dropdown-item  aria-role="listitem" v-else disabled>Checked Out</b-dropdown-item>
+                                <b-dropdown-item  aria-role="listitem" v-if="street.checked_out_by == user.user_id && street.checked_out == true && !isSpecialUser" @click="downloadStreet(territory, street)">
+                                   View Street
+                                </b-dropdown-item>   
+                                <b-dropdown-item aria-role="listitem" v-if="(street.checked_out_by == user.user_id || isSpecialUser) && street.checked_out" @click="toggleCheckout(street)">
+                                    <label class="upload control">Return Street</label>
+                                </b-dropdown-item>
+                                <b-dropdown-item aria-role="listitem" v-if="street.returned_at != null && !street.release_from_hold && isSpecialUser" @click="releaseFromHold(street)">
+                                    <label class="upload control">Release from Hold</label>
+                                </b-dropdown-item>
+                                <b-dropdown-item v-if="isSpecialUser" aria-role="listitem">
+                                     <b-upload v-model="street.file" accept=".pdf"  @input="uploadStreet($event, street)" :disabled="street.name == null"  v-if="isSpecialUser">
+                                         Upload Street
+                                    </b-upload>
+                                </b-dropdown-item>
+                                <b-dropdown-item v-if="isSpecialUser" aria-role="listitem" @click="downloadStreet(territory, street)">
+                                   <label class="upload control" > Preview Upload</label>
+                                </b-dropdown-item>
+                                <b-dropdown-item v-if="isSpecialUser" aria-role="listitem" @click="deleteStreet(street)"> Delete Street
+                                </b-dropdown-item>
+                            </b-dropdown>
                         </div>
                         <hr />
                     </div>
-                    <b-button type="is-primary" icon-left="plus"  @click="addStreet" v-if="$attrs.canCD && territory.territory_id == null" style="margin-right: 1em;">Add Street</b-button>
-                    <b-button type="is-success" icon-left="floppy" @click="saveTerritory" v-if="$attrs.canCD && territory.territory_id == null" style="margin-right: 1em;" :disabled="territory._streets.length == 0">Save Territory</b-button>
-                    <b-button type="is-danger" icon-left="delete" @click="deleteTerritory"  v-if="$attrs.canCD && territory.territory_id == null" disabled style="margin-right: 1em;">Delete Territory</b-button>
+                    <b-button v-show="territory.has_map" icon-left="download" @click="checkoutTerritory" style="margin-right: 1em;">Download Map</b-button>
+                    <b-button type="is-primary" icon-left="plus"  @click="addStreet" v-if="isSpecialUser" style="margin-right: 1em;">Add Street</b-button>
+                    <b-button type="is-success" icon-left="floppy" @click="saveTerritory" v-if="isSpecialUser" style="margin-right: 1em;" :disabled="allStreets.length == 0">Save Territory</b-button>
+                    <b-button type="is-danger" icon-left="delete" @click="deleteTerritory"  v-if="isSpecialUser" style="margin-right: 1em;">Delete Territory</b-button>
                     
                 </div>
             </div>
@@ -84,35 +100,18 @@
 import moment from "moment";
 import firebaseMixin from "@/mixins/firebase.mixin";
 import TerritoryTypeInput from "@/components/TerritoryTypeInput";
+import territoryMixin from "@/mixins/territory.mixin";
+
 export default {
     components: {
         TerritoryTypeInput
     },
     computed: {
-        formattedTerritory(){
-            let territory = this.territory;
-            (async ()=>{
-                this.territory._streets = this.territory._streets ? this.territory._streets : [];
-                for await(let street of this.territory._streets){
-                    let user = street.checked_out_by ? await this.fetchUserById(street.checked_out_by) : null;
-                    if(user != null ){
-                        let userData = await user.data();
-                        if(userData == undefined){
-                            street.checked_out_by = null;
-                            street.checked_out_name = null;
-                            street.checked_out = false;
-                        }else{
-                            street.checked_out_name = userData.name;
-                        }
-                    }
-                }
-                this.$forceUpdate();
-            })()
-            
-            return territory;
+        allStreets(){
+            return [...this.newStreets, ...this.streets]
         },
         numberOfAvailableStreets(){
-            let availableStreets = this.formattedTerritory._streets.filter(street=>{
+            let availableStreets = this.allStreets.filter(street=>{
                 return street.checked_out != true && street.returned_at == null;
             })
             return availableStreets.length
@@ -120,12 +119,23 @@ export default {
     },
     data(){
         return {
-            
+            newStreets: [],
+            streets: []
         }
     },
     methods: {
+        checkoutTerritory(){
+            this.downloadMap(this.territory);
+        },
+        updateMap(event){
+            this.saveFile(event, `territories/${this.territory.name}/map.pdf`).then(()=>{
+                let territory = JSON.parse(JSON.stringify(this.territory));
+                territory.has_map = true;
+                this.$emit("updateTerritory", territory);
+            });
+        },
         addStreet(){
-            this.territory._streets.push({
+            this.newStreets.push({
                 name: null,
                 houses: 0,
                 checked_out: false,
@@ -134,7 +144,11 @@ export default {
                 released_at: null,
                 last_checkout: null,
                 returned_at: null,
-                pdf_format: true
+                pdf_format: true,
+                has_file: false,
+                created_at: new Date(),
+                updated_at: new Date(),
+                deleted_at: null
             })
         },
         selectTerritoryType(type){
@@ -143,53 +157,53 @@ export default {
             territory.type_ref = this.db.collection("/territory-types").doc(type.territory_type_id);
             this.db.collection("/territories").doc(territory.territory_id).update(territory);
         },
-        saveTerritory(){
+        async saveTerritory(){
             for(let street of this.territory._streets){
                 delete street.html;
                 delete street.file;
+
+                if(street.created_at == null){
+                    street.created_at = new Date();
+                }
+                street.updated_at = new Date();
             }
+            await this.addStreets(this.territory.territory_id,this.newStreets);
+            this.newStreets = [];
             this.$emit("saveTerritory", this.territory)
         },
-        deleteStreet(index){
-            let streets = [];
-            for(let i = 0; i < this.territory._streets.length; i++){
-                if(i != index){
-                    streets.push(this.territory._streets[i]);
-                }
+        deleteStreet(street){
+            street.deleted_at = new Date();
+            this.updateStreet(this.territory.territory_id, street);
+
+            this.streets = this.streets.filter(s => s.street_id != street.street_id)
+            if(this.territory.territory_id){
+                this.$emit("saveTerritory", this.territory);
             }
-            this.deleteFile(`territories/${this.territory.name}/${this.territory._streets[index].name}.pdf`).then(response=>{
-            }).catch(err=>{
-
-            })
-
-            this.territory._streets = streets;
         },
         deleteTerritory(){
-            this.$emit("deleteTerritory", this.territory.territory_id);
+            this.$emit("deleteTerritory", this.territory);
         },
         releaseFromHold(street){
+            street.released_at = new Date();
             street.release_from_hold = true;
-            this.$emit("releaseStreet", this.territory, street);
+            street.last_checkout = null;
+            street.returned_at = null;
+            street.checked_out_by = null;
+            street.checked_out_name = null;
+            this.updateStreet(this.territory.territory_id, street);
         },
         toggleCheckout(street){
-            // for(let street of this.territory._streets ){
-            //     if(street.name == streetName){
-            let oldStreet = JSON.parse(JSON.stringify(street));
             street.checked_out = !street.checked_out;
+            street.checked_out_by = this.user.user_id;
             if(street.checked_out){
-                street.release_from_hold = false;
-                this.$emit("checkoutStreet", this.territory, oldStreet, street);
+                street.last_checkout = new Date();
+                street.checked_out_name = this.user.name;
+
             }else{
-                street.checked_out_name = null;
-                this.$emit("returnStreet", this.territory, oldStreet, street)
+                street.returned_at = new Date();
+                street.release_from_hold = false;
             }
-                // }
-            // }
-        },
-        returnStreet(street){
-            let oldStreet = JSON.parse(JSON.stringify(street));
-            street.checked_out = false;
-            this.$emit("returnStreet", this.territory, oldStreet, street)
+            this.updateStreet(this.territory.territory_id, street);
         },
         uploadStreet(event, street){
             this.saveFile(event, `territories/${this.territory.name}/${street.name}.pdf`).then(()=>{
@@ -207,6 +221,11 @@ export default {
                 return text
             }
             return `${text} at ${moment(date.toDate()).format("MM/DD/Y")}`;
+        },
+        loadStreets(){
+            this.fetchStreets(this.territory.territory_id).then((streets)=>{
+                this.streets = streets;
+            })
         }
     },
     props: {
@@ -229,6 +248,10 @@ export default {
         canCheckout: {
             type: Boolean,
             default: false
+        },
+        isSpecialUser: {
+            type: Boolean,
+            default: false
         }
     },
     watch:{
@@ -240,14 +263,38 @@ export default {
            }
        }
     },
-    mixins: [firebaseMixin],
+    mixins: [territoryMixin],
     mounted(){
-        
+        if(this.territory.territory_id){
+            this.onTerritoryUpdate(this.territory.territory_id, this.loadStreet)
+        }   
     }
 }
 </script>
 
 <style lang="scss" scoped>
+
+    .mb-1 {
+        margin-bottom: 1em;
+    }
+
+    .ml-1 {
+        margin-left: 1em;
+    }
+
+    .mr-1 {
+        margin-right: 1em;
+    }
+    .row {
+        display: flex; 
+        flex-flow: row; 
+        justify-content: space-between;
+        &.inputs {
+            margin-bottom: .5em;
+        }
+    }
+
+
     .street {
         display: flex; 
         flex-flow: row; 
@@ -270,6 +317,33 @@ export default {
             justify-content: flex-end;
             button {
                 margin-right: .5em;
+            }
+        }
+
+        .mobile-actions {
+            diplay: none;
+        }
+
+        @media screen and (max-width: 1366px){
+            .territory-title {
+                font-size: 14px;
+            }
+            .info {
+                display: flex;
+                font-size: 13px;
+            }
+            .actions {
+                display: none;
+            }
+
+            .mobile-actions {
+                width: 50%;
+                display: flex;
+                flex-flow: row;
+                justify-content: flex-end;
+                button {
+                    margin-right: .5em;
+                }
             }
         }
 

@@ -43,12 +43,12 @@ export default {
             return db.collection("/users").doc(id).get()
         },
         deleteUser(id){
-            // let functions = firebase.functions();
-            // let callable = functions.httpsCallable("deleteUser");
-            // callable(id);
-            // let db = firebase.firestore();
-            // return db.collection("/users").doc(id).delete();
+            //Not deleting users yet
         },
+        onTerritoryUpdate(cb){
+            let db = firebase.firestore();
+            return db.collection("/territories").onSnapshot(cb);
+        },  
         onUsersUpdate(cb){
             let db = firebase.firestore();
             return db.collection("/users").onSnapshot(cb);
@@ -146,7 +146,6 @@ export default {
             let territories = firebase.storage().ref(`territories`)
 
             let territoryname = territory.name.split(" ");
-            // territoryname[1] = parseInt(territoryname[1]);
             territoryname = territoryname.join(" ");
 
             let bucket = street.pdf_format ? `/${territoryname}/${street.name}.pdf` : `/${territoryname}/${street.name}.xlsx`
@@ -165,10 +164,6 @@ export default {
             }).catch(err=>{
                console.log(err);
             })
-        },
-        onTerritoryUpdate(cb){
-            let db = firebase.firestore();
-            return db.collection("/territories").onSnapshot(cb);
         },
 
         async fetchStreets(user_id){
